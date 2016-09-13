@@ -1,5 +1,11 @@
+# AVR
+*.eep
+*.lss
+*.map
+dep/
+
 # Object files
-*.o
+# *.o
 *.ko
 *.obj
 *.elf
