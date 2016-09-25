@@ -12,7 +12,7 @@ int NEW_COUNT=0;
 int main(void)
 {
 	ASA_M128_set();
-	printf("Motor test by LiYu 16.9.13\n");
+	printf("Motor test by LiYu 16.9.25\n");
 
 	uint8_t PWM_ASA_ID = 1;
 	unsigned int pwm_data = 500;
