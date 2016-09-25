@@ -26,9 +26,9 @@ int main(void)
 	}
 }
 void AC_init() {
-	SFIOR = 1 << ACME;
+	// SFIOR = 1 << ACME;
 	ACSR  = (0<<ACD)  | (0<<ACBG) | (0<<ACO)   | (0<<ACI)
-		  | (1<<ACIE) | (0<<ACIC) | (1<<ACIS1) | (1<<ACIS0);
+		  | (1<<ACIE) | (0<<ACIC) | (1<<ACIS1) | (0<<ACIS0);
 }
 ISR(ANALOG_COMP_vect){
 	asm("nop");

@@ -1,65 +1,72 @@
 #include "ASA_Lib.h"
 
-int INT4_COUNT = 0;
-int temp = 0;
+#define SET_START_LSBYTE 200
+#define PUT_START_LSBYTE 0
 
 void INT_set(char INT_num,char mode);
+void PORTE_init() ;
+
+int COUNT=0;
+int NEW_COUNT=0;
 
 int main(void)
 {
-
 	ASA_M128_set();
-	printf("START!!\n");
-	// INT4_vect_init();
+	printf("Motor test by LiYu 16.9.13\n");
+
+	uint8_t PWM_ASA_ID = 1;
+	unsigned int pwm_data = 500;
+	uint8_t check = 0;
+	uint8_t target_cycle = 0;
+	uint8_t teeth = 23; //原24 減掉鑽孔處偵測為23
+
+	PORTE_init();
 	INT_set(4,3);
-	printf("DDRB  = %d\n", DDRB);
-	printf("EICRA = %d\n", EICRA);
-	printf("EICRB = %d\n", EICRB);
-	printf("EIMSK = %d\n", EIMSK);
+
 	sei();
+
+	check = ASA_PWM00_set(PWM_ASA_ID,SET_START_LSBYTE,0x01,0,1);	//set PWM M1 enable
+	printf("c1=%d\n",check);										//check point1
+	check = ASA_PWM00_put(PWM_ASA_ID,PUT_START_LSBYTE,2,&pwm_data);	//put PWM M1 STOP
+	printf("c2=%d\n",check);										//check point1
+
 	while (1) {
-		asm("nop");
-		printf("INT4_COUNT = %d\n", INT4_COUNT);
-		if ( temp < INT4_COUNT) {
-			printf("INT4_COUNT = %d\n", INT4_COUNT);
-			temp = INT4_COUNT;
+		printf("\ninput target_cycle:");
+		scanf("%d",&target_cycle);
+
+		pwm_data = 0;
+		ASA_PWM00_put(PWM_ASA_ID,0,2,&pwm_data);
+
+		COUNT = 0;
+		while( COUNT <= target_cycle * teeth ){
+			//do something here ,otherwise get a bug that no break out while
+			printf(" ");
 		}
-		asm("nop");
-		// printf("PINB = %d\n", PINB);
 
-		// printf("%d\n", INT4_COUNT);
-
+		printf("\nEND-------");
+		pwm_data = 500;
+		ASA_PWM00_put(PWM_ASA_ID,0,2,&pwm_data);
 	}
+
 }
 void INT_set(char INT_num,char mode) {
-	DDRB |= 1<<(INT_num);
+	// mode 0:low level trigger
+	// mode 1:logic change trigger
+	// mode 2:falling edge
+	// mode 3:rising trigger
 	if (INT_num<4) {
-		EICRA |= (mode)<<(INT_num*2);
+		// EICRA |= (mode)<<(INT_num*2);
 	}else{
+		DDRE  &= ~(1<<INT_num);
+		PORTE |= (1<<INT_num);
 		EICRB |= (mode)<<((INT_num - 4)*2);
 	}
-	EIMSK |= 1<<INT_num;
+	EIMSK |= (1<<INT_num);
 }
-
-void INT4_vect_init(){
-	// EICRA=0x00 /*設定外部中斷3:0偵知方式，非外部中斷不需要，*/
-	DDRB = 0XFF;
-	EICRB = 0x03;
-	// EICRB |= (1<<ISC41) && (1<<ISC40); /*設定中斷7:4偵知方式*/
-	EIMSK |= (1<<INT4);  /*設定中斷致能*/
-
-	sei(); /*設定所有中斷均致能*/
+void PORTE_init() { //initialize PORTE 4~7 bits
+	DDRE  = 0xF0;
+	PORTE = 0xF0;
 }
-
-ISR(INT4_vect)
-{
-	asm("nop");
-	INT4_COUNT++;
+ISR(INT4_vect){
+	COUNT++;
 }
-
-char ASA_PWM00_set(char ASA_ID, char LSByte, char Mask, char shift, char Data);
-char ASA_PWM00_put(char ASA_ID, char LSByte, char Bytes, void *Data_p);
-
-
-// 85 ms 最敏感
-// 85*22 = 1870
