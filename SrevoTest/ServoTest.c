@@ -31,9 +31,7 @@ AVINASH GUPTA
 me@avinashgupta.com
 
 *******************************************************************************/
-#include <avr/io.h>
-
-#include <util/delay.h>
+#include "ASA_Lib.h"
 
 //Simple Wait Function
 void Wait()
@@ -48,28 +46,22 @@ void Wait()
 
 }
 
-int main()
+void main()
 {
-	//setting PWM-Ports as output
-	DDRB|=(1<<PB7)|(1<<PB6)|(1<<PB5);
-	DDRE|=(1<<PE3);
-	// PWM,Phase correct,8-Bit mode
-	TCCR1A|=(1<<WGM10);
-	TCCR3A|=(1<<WGM30);
-	//no-inverting PWM
-	TCCR1A|=(1<<COM1A1)|(1<<COM1B1)|(1<<COM1C1);
-	TCCR3A|=(1<<COM3A1);
-	// Timer running on MCU clock/8
-	TCCR1B|=(1<<CS11);
-	TCCR3B|=(1<<CS31);
-	//set Motor Speed
-	setMotorSpeed(200,100,160,220);
-	while(1);
-	return 0;
-}
-void setMotorSpeed(unsigned char motorSpeed1, unsigned char motorSpeed2,unsigned char motorSpeed3, unsigned char motorSpeed4){
-	OCR1A=motorSpeed1;
-	OCR1B=motorSpeed2;
-	OCR1C=motorSpeed3;
-	OCR3A=motorSpeed4;
+    ASA_M128_set();
+	printf("Motor test by LiYu 16.9.25\n");
+
+    //Configure TIMER1
+	TCCR1A|=(1<<COM1A1)|(1<<COM1B1)|(1<<WGM11);        //NON Inverted PWM
+	TCCR1B|=(1<<WGM13)|(1<<WGM12)|(1<<CS11)|(1<<CS10); //PRESCALER=64 MODE 14(FAST PWM)
+
+	ICR1=3499;  //fPWM=50Hz (Period = 20ms Standard).
+
+	DDRB|=(1<<PB5)|(1<<PB6)|(1<<PB7);   //PWM Pins as Out
+
+	while(1)
+	{
+		printf("Input OCR1:");
+        scanf("%d", &OCR1A);
+	}
 }
