@@ -61,7 +61,10 @@ void main()
 
 	while(1)
 	{
-		printf("Input OCR1:");
+        printf("\nInput OCR1A:");
         scanf("%d", &OCR1A);
+        printf("\nInput OCR1B:");
+        scanf("%d", &OCR1B);
+        //80~340 分180等分
 	}
 }
