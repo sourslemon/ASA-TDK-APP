@@ -3,6 +3,7 @@
 *.lss
 *.map
 dep/
+default/*.o
 
 # Object files
 # *.o

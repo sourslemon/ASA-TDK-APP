@@ -3,20 +3,26 @@
 void main()
 {
     ASA_M128_set();
-	printf("Motor test by LiYu 16.9.25\n");
+	printf("Motor test by LiYu 16.10.02\n");
 
     TIMER1_init();
 
-
 	DDRB|=(1<<PB5)|(1<<PB6)|(1<<PB7);   //PWM Pins as Out
 
+    OCR1B = 1000;
+    OCR1A = 1000;
+    _delay_ms(2000);
+    OCR1B = 700;
+    OCR1A = 700;
+    int id = 0;
+    int deg = 0;
 	while(1)
 	{
-        printf("\nInput OCR1A:");
-        scanf("%d", &OCR1A);
-        printf("\nInput OCR1B:");
-        scanf("%d", &OCR1B);
-        //80~340 分180等分
+        printf("\nInput ID:");
+        scanf("%d", &id);
+        printf("\nInput deg:");
+        scanf("%d", &deg);
+        servo_set(id,deg);
 	}
 }
 void TIMER1_init(){
@@ -30,17 +36,20 @@ void TIMER1_init(){
 }
 void servo_set(uint8_t id,uint8_t target_angle){
     // 0.00052643 (ms/per_val)
-    // min = 640  (0.3369 ms) 0 degree
-    // max = 2720 (1.9434 ms) ? degree TODO:測量此角度
-    // TODO 觀察 OCR-角度 是否呈現線性關係
-    // TODO 是否增加低轉速模式 (每段時間增加定植，直到達到目標值
+    // min = 700  (? ms) 0 degree
+    // max = 3300 (? ms) 180 degree
+    // TODO 觀察 OCR-角度 或 ms-角度 是否呈現線性關係 YES
+    // TODO 是否增加低轉速模式 (每段時間增加定值，直到達到目標值
 
     //(2720-640)/180 = 11.55 (degree/per_arget_data)
-    uint16_t target_data = (float)target_angle * 11.55;
+    float rate = (3300-700)/180; //(14.44)
+
+    uint16_t target_data = (float)target_angle * rate + 700;
+    printf("%d\n", target_data);
     if (id == 0) {
-        TCCR1A = target_data;
+        OCR1A = target_data;
     } else if (id == 1) {
-        TCCR1B = target_data;
+        OCR1B = target_data;
     } else {
         return 1;
     }
