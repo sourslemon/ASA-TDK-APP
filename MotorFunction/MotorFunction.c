@@ -44,8 +44,20 @@ int main(void)
 	printf("%d\n", check);
 	check = motor_set(RIGHT_MOTOR_ID,1,0);
 	printf("%d\n", check);
-	check = motor_set(LEFT_MOTOR_ID, 1,500);
+	check = motor_set(LEFT_MOTOR_ID, 1,0);
 	printf("%d\n", check);
+
+	int id,mode,data;
+	while (1) {
+		printf("\nID:");
+		scanf("%d", &id);
+		printf("\nMode:");
+		scanf("%d", &mode);
+		printf("\nData:");
+		scanf("%d", &data);
+		check = motor_set(id, mode,data);
+		printf("\ncheck=%d\n", check);
+	}
 
 	// check = ASA_PWM00_set(PWM_1_ASA_ID,SET_START_LSBYTE,0x01,0,1);	//set PWM M1 enable
 	// printf("debug2 = %d,%d,%d,%d\n",PWM_1_ASA_ID,SET_START_LSBYTE,0x01,0,1);
@@ -87,6 +99,8 @@ uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data) {
 	uint8_t pwm_asa_id = 0;
 	uint8_t pwm_channel = 0;
 	uint8_t check = 0;
+	static enable_status[2]={0};
+
 	if (motor_ID == 0 || motor_ID == 1 ) {
 		pwm_asa_id  = PWM_1_ASA_ID;
 		pwm_channel = motor_ID+1;
@@ -102,21 +116,30 @@ uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data) {
 	switch (mode) {
 		case 0:
 			if (data!=0 && data!=1) { return 3; }
+			if (data==0) {
+				enable_status[pwm_asa_id-1] &= ~(1<<(pwm_channel-1));
+			} else if (data==1) {
+				enable_status[pwm_asa_id-1] |= 1<<(pwm_channel-1);
+			}
+			data = enable_status;
+			check = ASA_PWM00_set(pwm_asa_id, SET_START_LSBYTE,3,0, data);
+			// printf("%d\n", enable_status[pwm_asa_id-1]);
 			// printf("debug1 = %d,%d,%d,%d,%d\n",pwm_asa_id,SET_START_LSBYTE,(1<<(pwm_channel-1)),pwm_channel-1,data);
-			check = ASA_PWM00_set(pwm_asa_id, SET_START_LSBYTE, (1<<(pwm_channel-1)), pwm_channel-1, data);
+			// check = ASA_PWM00_set(pwm_asa_id, SET_START_LSBYTE, (1<<(pwm_channel-1)), pwm_channel-1, data);
 			if (check!=0) { return 10+check; }
 			break;
 		case 1:
 			if (data>500) { return 3; }
 			data = 500-data;
-			// printf("debug2 = %d,%d,%d,%d\n",pwm_asa_id,(PUT_START_LSBYTE + pwm_channel*2 - 2),2,data);
 			check = ASA_PWM00_put(pwm_asa_id, (PUT_START_LSBYTE + pwm_channel*2-2), 2, &data);
+			// printf("debug2 = %d,%d,%d,%d\n",pwm_asa_id,(PUT_START_LSBYTE + pwm_channel*2 - 2),2,data);
 			if (check!=0) { return 10+check; }
 			break;
 		case 2:
 			if (data>500) { return 3; }
 			data = data+500;
 			check = ASA_PWM00_put(pwm_asa_id, (PUT_START_LSBYTE + pwm_channel*2-2), 2, &data);
+			// printf("debug3 = %d,%d,%d,%d\n",pwm_asa_id,(PUT_START_LSBYTE + pwm_channel*2 - 2),2,data);
 			if (check!=0) { return 10+check; }
 			break;
 		default:
