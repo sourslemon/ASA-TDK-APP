@@ -1,12 +1,25 @@
+/*
+ * Last modify at 2016.10.25 2pm bu LiYu
+ * Just take care of the HL to the PWM00
+ */
 #include "ASA_Lib.h"
 
+/*=== Servo Funtion Define =======================*/
 #define SERVO_GRIPPING 0
 #define SERVO_ROTATING 1
+/*================================================*/
 
+/*=== Timer3 function ============================*/
 void TIMER3_init();
-void servo_init();
-void servo_set(uint8_t id,uint8_t target_angle);
+/*================================================*/
 
+/*=== Servo funcion ==============================*/
+void servo_init();
+uint8_t servo_set(uint8_t id,uint8_t target_angle);
+// TODO 是否增加低轉速模式 (每段時間增加定值，直到達到目標值 )
+/*================================================*/
+
+/*=== Main =======================================*/
 void main()
 {
     ASA_M128_set();
@@ -26,6 +39,9 @@ void main()
         servo_set(id,deg);
 	}
 }
+/*================================================*/
+
+/*=== Timer3 functioin ===========================*/
 void TIMER3_init(){
     //Configure TIMER1
 	TCCR3A|=(1<<COM3A1)|(1<<COM3B1)|(1<<COM3C1)|(1<<WGM31);        //NON Inverted PWM (enable OCR1A,OCR1B)
@@ -37,6 +53,9 @@ void TIMER3_init(){
 
     DDRB|=(1<<PE5)|(1<<PE6);   //PWM Pins as Out
 }
+/*================================================*/
+
+/*=== Servo funcion ==============================*/
 void servo_init() {
     //以大角度啟動後復位到0度
     servo_set(SERVO_GRIPPING,30);
@@ -45,7 +64,7 @@ void servo_init() {
     servo_set(SERVO_GRIPPING,0);
     servo_set(SERVO_ROTATING,0);
 }
-void servo_set(uint8_t id,uint8_t target_angle){
+uint8_t servo_set(uint8_t id,uint8_t target_angle){
     // 0.00052643 (ms/per_val)
     // min = 700  (? ms) 0 degree
     // max = 3300 (? ms) 180 degree
@@ -53,6 +72,8 @@ void servo_set(uint8_t id,uint8_t target_angle){
     // TODO 是否增加低轉速模式 (每段時間增加定值，直到達到目標值
 
     //(2720-640)/180 = 11.55 (degree/per_arget_data)
+    if (data>180) { return 3;}
+
     float rate = (3300-700)/180; //(14.44)
 
     uint16_t target_data = (float)target_angle * rate + 700;
@@ -68,3 +89,4 @@ void servo_set(uint8_t id,uint8_t target_angle){
     return 0;
     // return 0:沒問題, 1:wrong ID, 2:wrong mode, 3:wrong data
 }
+/*================================================*/
