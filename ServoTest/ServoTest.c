@@ -72,7 +72,7 @@ uint8_t servo_set(uint8_t id,uint8_t target_angle){
     // TODO 是否增加低轉速模式 (每段時間增加定值，直到達到目標值
 
     //(2720-640)/180 = 11.55 (degree/per_arget_data)
-    if (data>180) { return 3;}
+    if (target_angle>180) { return 3;}
 
     float rate = (3300-700)/180; //(14.44)
 

@@ -148,7 +148,7 @@ void TIMER2_OVF_reg (void (*function)(void)){
 }
 /*================================================*/
 
-/*=== Motor Function Define ======================*/
+/*=== Motor function =============================*/
 uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data) {
 	uint8_t pwm_asa_id = 0;
 	uint8_t pwm_channel = 0;
