@@ -32,7 +32,7 @@ uint16_t TARGET_STEPS=0;
 int main(void)
 {
 	ASA_M128_set();
-	printf("Motor test by LiYu 16.9.25\n");
+	printf("Motor test by LiYu 16.10.04\n");
 
 	int check = 0;
 	uint16_t pwm_data=0;
@@ -47,29 +47,49 @@ int main(void)
 	check = motor_set(LEFT_MOTOR_ID, 1,0);
 	printf("%d\n", check);
 
-	int id,mode,data;
-	while (1) {
-		printf("\nID:");
-		scanf("%d", &id);
-		printf("\nMode:");
-		scanf("%d", &mode);
-		printf("\nData:");
-		scanf("%d", &data);
-		check = motor_set(id, mode,data);
-		printf("\ncheck=%d\n", check);
-	}
-
-	// check = ASA_PWM00_set(PWM_1_ASA_ID,SET_START_LSBYTE,0x01,0,1);	//set PWM M1 enable
-	// printf("debug2 = %d,%d,%d,%d\n",PWM_1_ASA_ID,SET_START_LSBYTE,0x01,0,1);
-	// printf("c1=%d\n",check);									//check point1
-	// check = ASA_PWM00_put(PWM_1_ASA_ID,PUT_START_LSBYTE,2,&pwm_data);	//put PWM M1 STOP
-	// printf("debug2 = %d,%d,%d,%d\n",PWM_1_ASA_ID,PUT_START_LSBYTE,2,pwm_data);
-	// printf("c2=%d\n",check);
-
-	INT_set(4,3);
+	// int id,mode,data;
 	// while (1) {
-	// 	// printf("%d\n", COUNT);
+	// 	printf("\nID:");
+	// 	scanf("%d", &id);
+	// 	printf("\nMode:");
+	// 	scanf("%d", &mode);
+	// 	printf("\nData:");
+	// 	scanf("%d", &data);
+	// 	check = motor_set(id, mode,data);
+	// 	printf("\ncheck=%d\n", check);
 	// }
+
+	// uint16_t target_cycle = 0;
+	uint16_t target_cycle = 0;
+	uint16_t teeth = 62; //原24 減掉鑽孔處偵測為23
+
+	PORTE_init();
+	INT_set(4,3);
+
+	sei();
+
+	while (1) {
+		printf("\ninput target_steps:");
+		scanf("%d",&target_cycle);
+
+		check = motor_set(RIGHT_MOTOR_ID,1,300);
+		printf("%d\n", check);
+		check = motor_set(LEFT_MOTOR_ID, 1,300);
+		printf("%d\n", check);
+
+		COUNT = 0;
+		// while( COUNT <= target_cycle * teeth ){
+		while( COUNT <= target_cycle ){
+			//do something here ,otherwise get a bug that no break out while
+			printf(" ");
+		}
+
+		printf("\nEND-------");
+		check = motor_set(RIGHT_MOTOR_ID,1,0);
+		printf("%d\n", check);
+		check = motor_set(LEFT_MOTOR_ID, 1,0);
+		printf("%d\n", check);
+	}
 }
 void INT_set(char INT_num, char mode) {
 	// mode 0:low level trigger
@@ -90,6 +110,7 @@ void PORTE_init() { //initialize PORTE 4~7 bits
 	DDRE  = 0xF0;
 	PORTE = 0xF0;
 }
+
 ISR(INT4_vect){
 	COUNT++;
 }
@@ -99,7 +120,7 @@ uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data) {
 	uint8_t pwm_asa_id = 0;
 	uint8_t pwm_channel = 0;
 	uint8_t check = 0;
-	static enable_status[2]={0};
+	static uint8_t enable_status[2]={0};
 
 	if (motor_ID == 0 || motor_ID == 1 ) {
 		pwm_asa_id  = PWM_1_ASA_ID;
@@ -121,7 +142,7 @@ uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data) {
 			} else if (data==1) {
 				enable_status[pwm_asa_id-1] |= 1<<(pwm_channel-1);
 			}
-			data = enable_status;
+			data = enable_status[pwm_asa_id-1];
 			check = ASA_PWM00_set(pwm_asa_id, SET_START_LSBYTE,3,0, data);
 			// printf("%d\n", enable_status[pwm_asa_id-1]);
 			// printf("debug1 = %d,%d,%d,%d,%d\n",pwm_asa_id,SET_START_LSBYTE,(1<<(pwm_channel-1)),pwm_channel-1,data);
@@ -129,15 +150,15 @@ uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data) {
 			if (check!=0) { return 10+check; }
 			break;
 		case 1:
-			if (data>500) { return 3; }
-			data = 500-data;
+			if (data>511) { return 3; }
+			data = 511-data;
 			check = ASA_PWM00_put(pwm_asa_id, (PUT_START_LSBYTE + pwm_channel*2-2), 2, &data);
 			// printf("debug2 = %d,%d,%d,%d\n",pwm_asa_id,(PUT_START_LSBYTE + pwm_channel*2 - 2),2,data);
 			if (check!=0) { return 10+check; }
 			break;
 		case 2:
-			if (data>500) { return 3; }
-			data = data+500;
+			if (data>=511) { return 3; }
+			data = data+512;
 			check = ASA_PWM00_put(pwm_asa_id, (PUT_START_LSBYTE + pwm_channel*2-2), 2, &data);
 			// printf("debug3 = %d,%d,%d,%d\n",pwm_asa_id,(PUT_START_LSBYTE + pwm_channel*2 - 2),2,data);
 			if (check!=0) { return 10+check; }
@@ -158,8 +179,8 @@ uint8_t go_step(uint16_t steps){
 	motor_set(RIGHT_MOTOR_ID,0,ENABLE);
 	motor_set(LEFT_MOTOR_ID, 0,ENABLE);
 	return 0;
-
 }
+
 void motor_count_steps(){
 	if (COUNT >= TARGET_STEPS) {
 		TIMER2_OVF_reg(NULL);
