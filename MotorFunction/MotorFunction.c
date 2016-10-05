@@ -1,28 +1,42 @@
+/*
+ * Last modify at 2016.10.25 2pm bu LiYu
+ * Just take care of the HL to the PWM00
+ */
 #include "ASA_Lib.h"
 
+/*=== Gereral Define =============================*/
 #define SET_START_LSBYTE 200
 #define PUT_START_LSBYTE 0
 
-#define PWM_1_ASA_ID 1
-#define PWM_2_ASA_ID 2
-#define RIGHT_MOTOR_ID 0
-#define LEFT_MOTOR_ID  1
-#define Z_MOTOR_ID 2
-#define Y_MOTOR_ID 3
-
 #define DISABLE 0
 #define ENABLE  1
+/*================================================*/
 
+/*=== Motor Function Define ======================*/
+#define PWM_1_ASA_ID 1
+#define PWM_2_ASA_ID 2
+#define MOTOR_RIGHT 0
+#define MOTOR_LEFT  1
+#define MOTOR_Y 2 // up and down
+#define MOTOR_Z 3 // stretching
+/*================================================*/
+
+/*=== Timer2 Function ============================*/
 void TIMER2_OVF_init();
 void TIMER2_OVF_reg (void (*function)(void));
 void (*TIMER2_OVF_fun)()=0;
+/*================================================*/
 
-void INT_set(char INT_num,char mode);
+/*=== INT function ===============================*/
 void PORTE_init();
+void INT_set(char INT_num,char mode);
+/*================================================*/
 
+/*=== Motor function==============================*/
 uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data);
-uint8_t go_step(uint16_t steps);
-void motor_count_steps();
+uint8_t go_step(uint16_t steps); //TODO finish this function
+void motor_count_steps(); 		 //TODO finish this function
+/*================================================*/
 
 
 uint16_t COUNT=0;
@@ -38,13 +52,13 @@ int main(void)
 	uint16_t pwm_data=0;
 	PORTE_init();
 
-	check = motor_set(RIGHT_MOTOR_ID,0,ENABLE);
+	check = motor_set(MOTOR_RIGHT,0,ENABLE);
 	printf("%d\n", check);
-	check = motor_set(LEFT_MOTOR_ID, 0,ENABLE);
+	check = motor_set(MOTOR_LEFT, 0,ENABLE);
 	printf("%d\n", check);
-	check = motor_set(RIGHT_MOTOR_ID,1,0);
+	check = motor_set(MOTOR_RIGHT,1,0);
 	printf("%d\n", check);
-	check = motor_set(LEFT_MOTOR_ID, 1,0);
+	check = motor_set(MOTOR_LEFT, 1,0);
 	printf("%d\n", check);
 
 	// int id,mode,data;
@@ -72,9 +86,9 @@ int main(void)
 		printf("\ninput target_steps:");
 		scanf("%d",&target_cycle);
 
-		check = motor_set(RIGHT_MOTOR_ID,1,300);
+		check = motor_set(MOTOR_RIGHT,1,300);
 		printf("%d\n", check);
-		check = motor_set(LEFT_MOTOR_ID, 1,300);
+		check = motor_set(MOTOR_LEFT, 1,300);
 		printf("%d\n", check);
 
 		COUNT = 0;
@@ -85,12 +99,15 @@ int main(void)
 		}
 
 		printf("\nEND-------");
-		check = motor_set(RIGHT_MOTOR_ID,1,0);
+		check = motor_set(MOTOR_RIGHT,1,0);
 		printf("%d\n", check);
-		check = motor_set(LEFT_MOTOR_ID, 1,0);
+		check = motor_set(MOTOR_LEFT, 1,0);
 		printf("%d\n", check);
 	}
 }
+/*================================================*/
+
+/*=== INT function ===============================*/
 void INT_set(char INT_num, char mode) {
 	// mode 0:low level trigger
 	// mode 1:logic change trigger
@@ -114,8 +131,24 @@ void PORTE_init() { //initialize PORTE 4~7 bits
 ISR(INT4_vect){
 	COUNT++;
 }
+/*================================================*/
 
+/*=== Timer2 Function ============================*/
+ISR(TIMER2_OVF_vect){
+	TIMER2_OVF_fun();
+}
+void TIMER2_OVF_init(){
+    TCCR2 |= 1;	// set up timer with prescaler = 2
+    TCNT2  = 0;	// initialize counter
+    TIMSK |=(1 << TOIE2);// enable overflow interrupt
+    // sei();// enable global interrupts
+}
+void TIMER2_OVF_reg (void (*function)(void)){
+	TIMER2_OVF_fun=function;
+}
+/*================================================*/
 
+/*=== Motor Function Define ======================*/
 uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data) {
 	uint8_t pwm_asa_id = 0;
 	uint8_t pwm_channel = 0;
@@ -176,8 +209,8 @@ uint8_t go_step(uint16_t steps){
 	INT_set(4,3);
 	TARGET_STEPS = steps;
 	TIMER2_OVF_reg(motor_count_steps);
-	motor_set(RIGHT_MOTOR_ID,0,ENABLE);
-	motor_set(LEFT_MOTOR_ID, 0,ENABLE);
+	motor_set(MOTOR_RIGHT,0,ENABLE);
+	motor_set(MOTOR_LEFT, 0,ENABLE);
 	return 0;
 }
 
@@ -185,21 +218,8 @@ void motor_count_steps(){
 	if (COUNT >= TARGET_STEPS) {
 		TIMER2_OVF_reg(NULL);
 	}
-	motor_set(RIGHT_MOTOR_ID,0,DISABLE);
-	motor_set(LEFT_MOTOR_ID, 0,DISABLE);
+	motor_set(MOTOR_RIGHT,0,DISABLE);
+	motor_set(MOTOR_LEFT, 0,DISABLE);
 	return ;
 }
-
-/*--------------------------interrupt function set--------------------------*/
-ISR(TIMER2_OVF_vect){
-	TIMER2_OVF_fun();
-}
-void TIMER2_OVF_init(){
-    TCCR2 |= 1;	// set up timer with prescaler = 2
-    TCNT2  = 0;	// initialize counter
-    TIMSK |=(1 << TOIE2);// enable overflow interrupt
-    // sei();// enable global interrupts
-}
-void TIMER2_OVF_reg (void (*function)(void)){
-	TIMER2_OVF_fun=function;
-}
+/*================================================*/
