@@ -51,7 +51,7 @@ void TIMER3_init(){
     //PRESCALER=8 ICR1=27992
     //PRESCALER=64 ICR1=3499
 
-    DDRB|=(1<<PE5)|(1<<PE6);   //PWM Pins as Out
+    DDRE|=(1<<PE4)|(1<<PE5);   //PWM Pins as Out
 }
 /*================================================*/
 

@@ -7,7 +7,6 @@ void main()
 
     TIMER3_init();
 
-	DDRE|=(1<<PB5)|(1<<PB6);   //PWM Pins as Out
 
     int id = 0;
     int deg = 0;
@@ -28,6 +27,7 @@ void TIMER3_init(){
 	ICR3=27992;  //fPWM=50Hz (Period = 20ms Standard).
     //PRESCALER=8 ICR1=27992
     //PRESCALER=64 ICR1=3499
+    DDRE|=(1<<PE4)|(1<<PE5);   //PWM Pins as Out
 }
 void servo_set(uint8_t id,uint8_t target_angle){
     // 0.00052643 (ms/per_val)
