@@ -58,4 +58,14 @@ imshow(gray_pic);
 hold on;
 line(new_obj1_Polygon(:, 1), new_obj1_Polygon(:, 2), 'Color', 'y');
 title('Detected obj1');
+
+[B,L] = bwboundaries(bw,'noholes');
+
+% Display the label matrix and draw each boundary
+imshow(label2rgb(L, @jet, [.5 .5 .5]))
+hold on
+for k = 1:length(B)
+  boundary = B{k};
+  plot(boundary(:,2), boundary(:,1), 'w', 'LineWidth', 2)
+end
     

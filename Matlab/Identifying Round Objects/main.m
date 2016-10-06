@@ -5,7 +5,7 @@ imshow(RGB);
 %Step2. Image binarization
 I = rgb2gray(RGB);
     %¦Ç¶¥
-threshold = graythresh(I); 
+threshold = graythresh(I);
     % Otsu's method to get a threshold that minimizes the intra-class variance
     % ¤j¬zºtºâªk¨DìH­È
 bw = im2bw(I,threshold);
@@ -21,7 +21,7 @@ bw = imclose(bw,se);
     %imclose»ØÁ_¶ñº¡¡A¤ñ¸û¦n¤ÀªR
 
 bw = imfill(~bw,'holes');
-    %imfill©Ò¦³³QÃä¬É©Ò³ò°_¨Óªº¬}¶ñº¡¡A³o¼Ë¥i¥H¦ô­pregionprops
+    %imfill©Ò¦³³QÃä¬É©Ò³òş¨Óªº¬}¶ñº¡¡A³o¼Ë¥i¥H¦ô­pregionprops
 
 imshow(bw)
 
