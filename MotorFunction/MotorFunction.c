@@ -22,7 +22,7 @@
 /*================================================*/
 
 /*=== Timer2 Function ============================*/
-void TIMER2_OVF_init();
+void TIMER2_init();
 void TIMER2_OVF_reg (void (*function)(void));
 void (*TIMER2_OVF_fun)()=0;
 /*================================================*/
@@ -36,13 +36,21 @@ void INT_set(char INT_num,char mode);
 uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data);
 uint8_t motor_go_steps(uint8_t id, uint16_t steps);
 void motor_check_steps(uint8_t id);
+uint8_t motor_go_time(uint8_t id, uint32_t target_micro_secs);
+void motor_check_time();
 /*================================================*/
+
+void go_ahead(uint32_t target_micro_secs);
 
 
 uint16_t NEW_COUNT=0;
 uint8_t  MOTOR_IS_ENABLE[4]={0};
 uint16_t MOTOR_COUNT[4]={0};
 uint16_t MOTOR_TARGET_STEPS[4]={0};
+uint32_t MOTOR_TIME_ENABLE[4]={0};
+uint32_t MOTOR_TIME_COUNT[4]={0};
+uint32_t MOTOR_TIME_TARGET[4]={0};
+uint32_t Time_Count = 0;
 
 
 int main(void)
@@ -81,22 +89,32 @@ int main(void)
 
 	uint16_t target_cycle = 0,way = 0,id=0;
 	uint16_t teeth = 1; //原24 減掉鑽孔處偵測為23
+	uint32_t target_time = 0;
 
 	PORTE_init();
-	sei();
+	TIMER2_init();
+	cli();
+	// sei();
 
 	while (1) {
 		printf("\ninput target_steps:");
-		scanf("%d",&target_cycle);
-		printf("\ninput way:");
-		scanf("%d",&way);
-		printf("\ninput id:");
-		scanf("%d",&id);
+		scanf("%d",&target_time);
+		// printf("\ninput way:");
+		// scanf("%d",&way);
+		// printf("\ninput id:");
+		// scanf("%d",&id);
+		sei();
+		check = motor_set(MOTOR_RIGHT,1,500);
 
-		check = motor_set(id,way,500);
-		printf("%d\n", check);
+		check = motor_set(MOTOR_LEFT, 1,500);
 
-		motor_go_steps(id,target_cycle);
+		go_ahead(target_time);
+
+		// check = motor_set(id,way,500);
+		// printf("%d\n", check);
+		//
+		// // motor_go_steps(id,target_cycle);
+		// motor_go_time(id,target_cycle);
 	}
 }
 /*================================================*/
@@ -149,14 +167,22 @@ ISR(INT7_vect){
 /*================================================*/
 
 /*=== Timer2 Function ============================*/
-ISR(TIMER2_OVF_vect){
-	TIMER2_OVF_fun();
+ISR(TIMER2_COMP_vect){
+	// 1單位為0.001ms , uint32_t 可記錄 2^32/1000/60/60 = 1193.04647hr
+	Time_Count++;
+	// printf("%d\n", Time_Count);
+	motor_check_time();
+	// TIMER2_OVF_fun();
 }
-void TIMER2_OVF_init(){
-    TCCR2 |= 1;	// set up timer with prescaler = 2
+void TIMER2_init(){
+	TCCR2  = 0;
+	TCCR2 |= (1<<WGM21) | (0<<WGM20); // CTC mode
+	TCCR2 |= (0<<COM21) | (0<<COM20); // no Compare Output
+    TCCR2 |= (0<<CS22)  | (1<<CS21) | (1<<CS20); // set up timer with prescaler = 64
     TCNT2  = 0;	// initialize counter
-    TIMSK |=(1 << TOIE2);// enable overflow interrupt
-    // sei();// enable global interrupts
+    TIMSK |= (1<<OCIE2) | (0<<TOIE2); // Output Compare Match Interrupt Enable
+	OCR2 = 171; // f = 11059200/64/(1+171) = 1004.65116, see as 1000hz, err = 0.5%
+	printf("TCCR2 = %d, TIMSK = %d\n", TCCR2, TIMSK);
 }
 void TIMER2_OVF_reg (void (*function)(void)){
 	TIMER2_OVF_fun=function;
@@ -192,7 +218,7 @@ uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data) {
 			data = enable_status[pwm_asa_id-1];
 			check = ASA_PWM00_set(pwm_asa_id, SET_START_LSBYTE,3,0, data);
 			// printf("%d\n", enable_status[pwm_asa_id-1]);
-			printf("debug1 = %d,%d,%d,%d,%d\n",pwm_asa_id,SET_START_LSBYTE,(1<<(pwm_channel-1)),pwm_channel-1,data);
+			// printf("debug1 = %d,%d,%d,%d,%d\n",pwm_asa_id,SET_START_LSBYTE,(1<<(pwm_channel-1)),pwm_channel-1,data);
 			// check = ASA_PWM00_set(pwm_asa_id, SET_START_LSBYTE, (1<<(pwm_channel-1)), pwm_channel-1, data);
 			if (check!=0) { return 10+check; }
 			break;
@@ -200,7 +226,7 @@ uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data) {
 			if (data>511) { return 3; }
 			data = 511-data;
 			check = ASA_PWM00_put(pwm_asa_id, (PUT_START_LSBYTE + pwm_channel*2-2), 2, &data);
-			printf("debug2 = %d,%d,%d,%d\n",pwm_asa_id,(PUT_START_LSBYTE + pwm_channel*2 - 2),2,data);
+			// printf("debug2 = %d,%d,%d,%d\n",pwm_asa_id,(PUT_START_LSBYTE + pwm_channel*2 - 2),2,data);
 			if (check!=0) { return 10+check; }
 			break;
 		case 2:
@@ -231,6 +257,7 @@ uint8_t motor_go_steps(uint8_t id, uint16_t steps){
 
 void motor_check_steps(uint8_t id) {
 	printf("--\n");
+	if (MOTOR_IS_ENABLE[id]) {
 		if ( MOTOR_COUNT[id] >= MOTOR_TARGET_STEPS[id] ) {
 			// 計算步數大於預期步數，則停止馬達，終止計數
 			motor_set(id,0,DISABLE);
@@ -242,6 +269,39 @@ void motor_check_steps(uint8_t id) {
 		} else {
 
 		}
+	}
 
 }
+uint8_t motor_go_time(uint8_t id, uint32_t target_micro_secs){
+	motor_set(id,0,ENABLE);
+	MOTOR_TIME_ENABLE[id]=1;
+	MOTOR_TIME_COUNT[id]=0;
+	MOTOR_TIME_TARGET[id]=target_micro_secs;
+
+	return 0;
+}
+
+void motor_check_time() {
+	for (uint8_t id = 0; id < 4; id++) {
+		if (MOTOR_TIME_ENABLE[id] == ENABLE) {
+			if ( MOTOR_TIME_COUNT[id] >= MOTOR_TIME_TARGET[id] ) {
+				motor_set(id,0,DISABLE);
+				MOTOR_TIME_ENABLE[id]=0;
+				// printf("END----\n");
+			}else if ( MOTOR_TIME_ENABLE[id] == ENABLE) {
+				MOTOR_TIME_COUNT[id]++;
+				// printf("id = %d ----%ld,%ld\n", id, MOTOR_TIME_COUNT[id], MOTOR_TIME_TARGET[id]);
+			}
+		}
+	}
+}
 /*================================================*/
+
+void go_ahead(uint32_t target_micro_secs) {
+	motor_go_time(MOTOR_RIGHT,target_micro_secs);
+	motor_go_time(MOTOR_LEFT ,target_micro_secs);
+}
+//一秒前進約30cm
+//2s : 555  mm
+//3s : 840  mm
+//4s : 1071 mm
