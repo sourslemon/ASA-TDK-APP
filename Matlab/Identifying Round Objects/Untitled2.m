@@ -1,7 +1,7 @@
-clc;clear;
-cam = webcam(3);
-I = snapshot(cam);
-% I=imread('test7.jpg');
+% clc;clear;
+% cam = webcam(3);
+% I = snapshot(cam);
+I=imread('test7.jpg');
 Ir = I(:,:,1);
 Ig = I(:,:,2);
 Ib = I(:,:,3);
