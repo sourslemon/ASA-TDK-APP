@@ -139,8 +139,6 @@ void main()
         }else{
             motor_set(MOTOR_LEFT, 0,DISABLE);
         }
-
-
     }
 
 }
@@ -154,7 +152,7 @@ void TIMER2_OVF_init(){
     TCCR2 |= 1;	// set up timer with prescaler = 2
     TCNT2  = 0;	// initialize counter
     TIMSK |=(1 << TOIE2);// enable overflow interrupt
-    // sei();// enable global interrupts
+    // sei(); // enable global interrupts
 }
 void TIMER2_OVF_reg (void (*function)(void)){
     TIMER2_OVF_fun=function;
