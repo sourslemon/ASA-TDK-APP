@@ -52,13 +52,14 @@ uint32_t MOTOR_TIME_COUNT[4]={0};
 uint32_t MOTOR_TIME_TARGET[4]={0};
 uint32_t Time_Count = 0;
 
+uint32_t Motor_Y_position = 0;
 
 int main(void)
 {
 	ASA_M128_set();
 	printf("Motor test by LiYu 16.10.10\n");
 
-	int check = 0;
+	uint8_t  check = 0;
 	uint16_t pwm_data=0;
 	// PORTE_init();
 
@@ -101,19 +102,28 @@ int main(void)
 		scanf("%d",&target_time);
 		// printf("\ninput way:");
 		// scanf("%d",&way);
+		// printf("\ninput way:");
+		// scanf("%d",&way);
 		// printf("\ninput id:");
 		// scanf("%d",&id);
 		sei();
-		check = motor_set(MOTOR_RIGHT,1,500);
-
-		check = motor_set(MOTOR_LEFT, 1,500);
-
 		go_ahead(target_time);
+
+		printf("\ninput target_steps:");
+		scanf("%d",&target_time);
+		turn_left(target_time);
+
+		printf("\ninput target_steps:");
+		scanf("%d",&target_time);
+		turn_left(target_time);
+
+
+		// go_up(way,target_time);
 
 		// check = motor_set(id,way,500);
 		// printf("%d\n", check);
 		//
-		// // motor_go_steps(id,target_cycle);
+		// motor_go_steps(id,target_cycle);
 		// motor_go_time(id,target_cycle);
 	}
 }
@@ -298,8 +308,26 @@ void motor_check_time() {
 /*================================================*/
 
 void go_ahead(uint32_t target_micro_secs) {
+	motor_set(MOTOR_RIGHT,1,500);
+	motor_set(MOTOR_LEFT, 1,500);
 	motor_go_time(MOTOR_RIGHT,target_micro_secs);
 	motor_go_time(MOTOR_LEFT ,target_micro_secs);
+}
+void go_up(uint8_t way,uint32_t target_micro_secs) {
+	motor_set(MOTOR_Y,1+way,200);
+	motor_go_time(MOTOR_Y,target_micro_secs);
+}
+void turn_right(uint32_t target_micro_secs) {
+	motor_set(MOTOR_RIGHT,2,300);
+	motor_set(MOTOR_LEFT, 1,300);
+	motor_go_time(MOTOR_RIGHT,target_micro_secs);
+ 	motor_go_time(MOTOR_LEFT ,target_micro_secs);
+}
+void turn_left(uint32_t target_micro_secs) {
+	motor_set(MOTOR_RIGHT,1,300);
+	motor_set(MOTOR_LEFT, 2,300);
+	motor_go_time(MOTOR_RIGHT,target_micro_secs);
+ 	motor_go_time(MOTOR_LEFT ,target_micro_secs);
 }
 //一秒前進約30cm
 //2s : 555  mm

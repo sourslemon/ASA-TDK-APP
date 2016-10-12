@@ -1,7 +1,9 @@
 clc;clear;
-cam = webcam(3);
+cam = webcam(2);
+cam = webcam('USB2.0 PC CAMERA');
+pause(3)
 I = snapshot(cam);
-I=imrotate(I,270);
+I=imrotate(I,180);
 % I=imread('road2.png');
 Ir = I(:,:,1);
 Ig = I(:,:,2);
@@ -93,4 +95,4 @@ plot(mid_bottom(2),mid_bottom(1), 'g*');
 plot(mid_top(2),mid_top(1), 'g*');
 
 m = (mid_top(1)-mid_bottom(1)) / (mid_top(2)-mid_bottom(2));
-deg = atan(1/m)* 180/pi;
+deg = atan(1/m)* 180/pi

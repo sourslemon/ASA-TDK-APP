@@ -99,3 +99,5 @@ right_down = [ boundary(bottom_I,1) , boundary(bottom_I,2)+b/2 ];
 
 plot(left_down(2),left_down(1), 'r*');
 plot(right_down(2),right_down(1), 'r*');
+
+
