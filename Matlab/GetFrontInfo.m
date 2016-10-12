@@ -1,4 +1,4 @@
-function [m_front,deg_front] = GetFrontInfo()
+function [m_front,deg_front,x_position,y_position] = GetFrontInfo()
 % 480*640
 cam = webcam('USB2.0_Camera');
 I = snapshot(cam);
@@ -6,7 +6,7 @@ I = imrotate(I,270);
 imshow(I)
 % I=imread('road2.png');
 
-% 顏色處理
+% ?C???B?z
 Ir = I(:,:,1);
 Ig = I(:,:,2);
 Ib = I(:,:,3);
@@ -17,13 +17,13 @@ Inew = Ir*Cr + Ib*Cb + Ig*Cg;
 
 Inew=medfilt2(Inew,[5,5]);
 
-% 影像處理
+% ?v???B?z
 threshold = graythresh(Inew);
 
     % Otsu's method to get a threshold that minimizes the intra-class variance
-    % 大津演算法求閾值
+    % ?j?z?t???k?D?H??
 bw = im2bw(Inew,threshold);
-    % 依據閾值二值化
+    % ????H??G???
 bw = imfill(~bw,'holes');
 bw = bwareaopen(~bw,5000);
 bw = bwareaopen(~bw,5000);
@@ -64,5 +64,7 @@ mid_bottom = [( boundary(I1,1) + boundary(I4,1) )/2 , ( boundary(I1,2) + boundar
 % plot(mid_bottom(2),mid_bottom(1), 'g*');
 % plot(mid_top(2),mid_top(1), 'g*');
 
-m = (mid_top(1)-mid_bottom(1)) / (mid_top(2)-mid_bottom(2))
-deg = atan(1/m)* 180/pi
+m = (mid_top(1)-mid_bottom(1)) / (mid_top(2)-mid_bottom(2));
+deg = atan(1/m)* 180/pi;
+x_position = centroids(1) - 240;
+y_position = centroids(2) - 320;

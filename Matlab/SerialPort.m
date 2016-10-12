@@ -33,12 +33,12 @@ while 1
             fprintf(ASA_PC,'%d\n',round(deg*100));
         end
 
-        if mean( data(1:7) == 'FrontDeg' ) == 1
+        if mean( data(1:8) == 'FrontDeg' ) == 1
             [m,deg] = TEST();
             fprintf(ASA_PC,'%d\n',round(deg*100));
         end
 
-        if mean( data(1:3) == 'End' ) == 1
+        if mean( data(1:7) == 'End----' ) == 1
             break
         end
     end

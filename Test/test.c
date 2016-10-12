@@ -53,9 +53,9 @@ void motor_check_time();
 
 /*=== Matlab function ====================================*/
 void matlab_start_point(uint16_t* data);
-void matlab_get_rear_deg(uint16_t* data);
-void matlab_get_front_deg(uint16_t* data);
 void matlab_get_coke_info(uint16_t* position,uint16_t* distance);
+void matlab_get_rear_road_info(uint16_t* data,uint16_t* x,uint16_t* y);
+void matlab_get_front_road_info(uint16_t* data,uint16_t* x,uint16_t* y);
 /*========================================================*/
 
 /*=== Robot function =====================================*/
@@ -65,8 +65,6 @@ void robot_go_up(uint8_t way,uint32_t target_micro_secs);
 void robot_turn_right(uint32_t target_micro_secs);
 void robot_turn_left(uint32_t target_micro_secs);
 /*========================================================*/
-
-
 
 
 uint16_t NEW_COUNT=0;
@@ -81,7 +79,7 @@ uint32_t Time_Count = 0;
 uint32_t Motor_Y_position = 0;
 
 /*=== Main ===============================================*/
-void main()
+int main()
 {
     ASA_M128_set();
 
@@ -100,7 +98,8 @@ void main()
 
     /*=== start ==========================================*/
     uint16_t start_point = 0;
-    uint16_t deg_rear = 0, deg_front = 0;
+    uint16_t rear_deg=0 , rear_x=0 , rear_y=0;
+    uint16_t front_deg=0 , front_x=0 , front_y=0;
     matlab_start_point(&start_point);
     sei();
 
@@ -108,7 +107,8 @@ void main()
         case 1:{ //走到冰箱
             robot_go_ahead(12000);
             while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
-                // matlab_get_rear_deg(&deg_rear);
+                matlab_get_rear_road_info(&rear_deg,&rear_x,&rear_y);
+                matlab_get_front_road_info(&front_deg,&front_x,&front_y);
                 // matlab_get_front_deg(&deg_front);
                 printf("---\n" );
 
@@ -116,14 +116,18 @@ void main()
         }
         case 2:{ //轉彎
             robot_turn_right(3400);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {}
             robot_go_back(2000);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {}
             robot_turn_right(6800);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {}
         }
-        case 3:
-        case 4:
-        case 5:
+        case 3:{
+            ;
+        }
     }
     /*=== start ==========================================*/
+
 
 }
 /*========================================================*/
@@ -391,20 +395,24 @@ void robot_turn_left(uint32_t target_micro_secs) {
 
 /*=== Matlab function =====================================*/
 void matlab_start_point(uint16_t* data) {
-    printf("Start--\n");
+    printf("Start-----\n");
     scanf("%d\n", data);
 }
 void matlab_end(uint16_t* data) {
-    printf("End----\n");
+    printf("End-------\n");
 }
 
-void matlab_get_rear_deg(uint16_t* data) {
-    printf("RareDeg\n");
+void matlab_get_rear_road_info(uint16_t* data,uint16_t* x,uint16_t* y) {
+    printf("RareDeg---\n");
     scanf("%d\n", data);
+    scanf("%d\n", x);
+    scanf("%d\n", y);
 }
-void matlab_get_front_deg(uint16_t* data) {
-    printf("FrontDeg\n");
+void matlab_get_front_road_info(uint16_t* data,uint16_t* x,uint16_t* y) {
+    printf("FrontDeg---\n");
     scanf("%d\n", data);
+    scanf("%d\n", x);
+    scanf("%d\n", y);
 }
 void matlab_get_coke_info(uint16_t* position,uint16_t* distance) {
     /* code */
