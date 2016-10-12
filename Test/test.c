@@ -97,7 +97,7 @@ int main()
     /*=== init ===========================================*/
 
     /*=== start ==========================================*/
-    uint16_t start_point = 0;
+    uint16_t start_point = 0, deg = 0;
     uint16_t rear_deg=0 , rear_x=0 , rear_y=0;
     uint16_t front_deg=0 , front_x=0 , front_y=0;
     matlab_start_point(&start_point);
@@ -109,6 +109,37 @@ int main()
             while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
                 matlab_get_rear_road_info(&rear_deg,&rear_x,&rear_y);
                 matlab_get_front_road_info(&front_deg,&front_x,&front_y);
+                deg = (rear_deg + front_deg)/2;
+                if ( front_x >0 && front_x >0) {
+                    if (deg < -10) {
+                        motor_set(MOTOR_RIGHT,1,200);
+                    	motor_set(MOTOR_LEFT, 2,500);
+                    } else if (deg >= -10 && deg < -5) {
+                        motor_set(MOTOR_RIGHT,1,300);
+                    	motor_set(MOTOR_LEFT, 2,500);
+                    } else if (deg >= -5 && deg < -1) {
+                        motor_set(MOTOR_RIGHT,1,400);
+                    	motor_set(MOTOR_LEFT, 2,500);
+                    } else if (deg >= -1 && deg < 1) {
+                        motor_set(MOTOR_RIGHT,1,500);
+                    	motor_set(MOTOR_LEFT, 2,500);
+                        if( front_x >100){
+                            motor_set(MOTOR_LEFT, 2,500);
+                            motor_set(MOTOR_RIGHT,1,400);
+                        }
+                    } else if (deg >= 1 && deg < 5) {
+                        motor_set(MOTOR_RIGHT,1,500);
+                    	motor_set(MOTOR_LEFT, 2,500);
+                    } else if (deg >= 5 && deg < 10) {
+                        motor_set(MOTOR_RIGHT,1,500);
+                    	motor_set(MOTOR_LEFT, 2,500);
+                    } else if (deg >= 10) {
+                        motor_set(MOTOR_RIGHT,1,500);
+                    	motor_set(MOTOR_LEFT, 2,400);
+                    } else {
+                        /* code */
+                    }
+                }
                 // matlab_get_front_deg(&deg_front);
                 printf("---\n" );
 
