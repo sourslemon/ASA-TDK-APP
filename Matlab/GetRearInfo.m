@@ -1,13 +1,13 @@
-function [m_front,deg_front] = GetRearInfo()
+function [m,deg,x_position,y_position]  = GetRearInfo()
 
 cam = webcam('USB2.0 PC CAMERA');
-pause(3)
+% pause(3)
 I = snapshot(cam);
-I = imrotate(I,270);
-imshow(I)
-I = snapshot(cam);
-I = imrotate(I,270);
-imshow(I)
+I = imrotate(I,180);
+% imshow(I)
+% I = snapshot(cam);
+% I = imrotate(I,270);
+% imshow(I)
 % I=imread('road2.png');
 
 % ÃC¦â³B²z
@@ -68,5 +68,7 @@ mid_bottom = [( boundary(I1,1) + boundary(I4,1) )/2 , ( boundary(I1,2) + boundar
 % plot(mid_bottom(2),mid_bottom(1), 'g*');
 % plot(mid_top(2),mid_top(1), 'g*');
 
-m = (mid_top(1)-mid_bottom(1)) / (mid_top(2)-mid_bottom(2))
+m = (mid_top(1)-mid_bottom(1)) / (mid_top(2)-mid_bottom(2));
 deg = atan(1/m)* 180/pi
+x_position = centroids(1) - 320;
+y_position = centroids(2) - 240;

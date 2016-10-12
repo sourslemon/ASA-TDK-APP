@@ -25,16 +25,16 @@ bw = bwareaopen(~bw,5000);
 [B,L] = bwboundaries(bw,'noholes');
 
 % Display the label matrix and draw each boundary
-% imshow(label2rgb(L, @jet, [.5 .5 .5]))
-% hold on
-% for k = 1:length(B)
-%   boundary = B{k};
-%   plot(boundary(:,2), boundary(:,1), 'w', 'LineWidth', 2)
-% end
+imshow(label2rgb(L, @jet, [.5 .5 .5]))
+hold on
+for k = 1:length(B)
+  boundary = B{k};
+  plot(boundary(:,2), boundary(:,1), 'w', 'LineWidth', 2)
+end
 
 stats = regionprops(L,'Area','Centroid');
 centroids = stats.Centroid;
-% plot(centroids(:,1),centroids(:,2), 'b*')
+plot(centroids(:,1),centroids(:,2), 'b*')
 
 % figure(1);
 % hold on
@@ -61,3 +61,7 @@ mid_bottom = [( boundary(I1,1) + boundary(I4,1) )/2 , ( boundary(I1,2) + boundar
 
 m = (mid_top(1)-mid_bottom(1)) / (mid_top(2)-mid_bottom(2));
 deg = atan(1/m)* 180/pi;
+x = centroids(1) -240
+y = centroids(2) -320
+
+

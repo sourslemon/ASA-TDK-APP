@@ -104,54 +104,114 @@ int main()
     sei();
 
     switch (start_point) {
+
+        //一秒前進約30cm
+        //2s : 555  mm
+        //3s : 840  mm
+        //4s : 1071 mm
+
         case 1:{ //走到冰箱
-            robot_go_ahead(12000);
+            // 12s 290cm
+            robot_go_ahead(14000);
             while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
                 matlab_get_rear_road_info(&rear_deg,&rear_x,&rear_y);
                 matlab_get_front_road_info(&front_deg,&front_x,&front_y);
                 deg = (rear_deg + front_deg)/2;
-                if ( front_x >0 && front_x >0) {
-                    if (deg < -10) {
+                if ( front_x >0 && rear_x >0) {
+                    if (deg < -1000) {
                         motor_set(MOTOR_RIGHT,1,200);
                     	motor_set(MOTOR_LEFT, 2,500);
-                    } else if (deg >= -10 && deg < -5) {
+                    } else if (deg >= -1000 && deg < -500) {
                         motor_set(MOTOR_RIGHT,1,300);
                     	motor_set(MOTOR_LEFT, 2,500);
-                    } else if (deg >= -5 && deg < -1) {
+                    } else if (deg >= -500 && deg < -100) {
                         motor_set(MOTOR_RIGHT,1,400);
                     	motor_set(MOTOR_LEFT, 2,500);
-                    } else if (deg >= -1 && deg < 1) {
+                    } else if (deg >= -100 && deg < 100) {
                         motor_set(MOTOR_RIGHT,1,500);
                     	motor_set(MOTOR_LEFT, 2,500);
                         if( front_x >100){
                             motor_set(MOTOR_LEFT, 2,500);
                             motor_set(MOTOR_RIGHT,1,400);
                         }
-                    } else if (deg >= 1 && deg < 5) {
+                    } else if (deg >= 100 && deg < 500) {
                         motor_set(MOTOR_RIGHT,1,500);
                     	motor_set(MOTOR_LEFT, 2,500);
-                    } else if (deg >= 5 && deg < 10) {
+                    } else if (deg >= 500 && deg < 1000) {
                         motor_set(MOTOR_RIGHT,1,500);
                     	motor_set(MOTOR_LEFT, 2,500);
-                    } else if (deg >= 10) {
+                    } else if (deg >= 1000) {
                         motor_set(MOTOR_RIGHT,1,500);
                     	motor_set(MOTOR_LEFT, 2,400);
                     } else {
                         /* code */
                     }
                 }
+                else if ( front_x <0 && rear_x <0) {
+                    if (deg < -1000) {
+                        motor_set(MOTOR_RIGHT,1,500);
+                    	motor_set(MOTOR_LEFT, 1,400);
+                    } else if (deg >= -1000 && deg < -500) {
+                        motor_set(MOTOR_RIGHT,1,500);
+                    	motor_set(MOTOR_LEFT, 1,500);
+                    } else if (deg >= -500 && deg < -100) {
+                        motor_set(MOTOR_RIGHT,1,500);
+                    	motor_set(MOTOR_LEFT, 1,500);
+                    } else if (deg >= -100 && deg < 100) {
+                        motor_set(MOTOR_RIGHT,1,500);
+                    	motor_set(MOTOR_LEFT, 1,500);
+                        if( front_x <-100){
+                            motor_set(MOTOR_LEFT, 1,400);
+                            motor_set(MOTOR_RIGHT,1,500);
+                        }
+                    } else if (deg >= 100 && deg < 500) {
+                        motor_set(MOTOR_RIGHT,1,500);
+                    	motor_set(MOTOR_LEFT, 1,400);
+                    } else if (deg >= 5 && deg < 10) {
+                        motor_set(MOTOR_RIGHT,1,500);
+                    	motor_set(MOTOR_LEFT, 1,300);
+                    } else if (deg >= 1000) {
+                        motor_set(MOTOR_RIGHT,1,500);
+                    	motor_set(MOTOR_LEFT, 1,200);
+                    } else {
+                        /* code */
+                    }
+                }
                 // matlab_get_front_deg(&deg_front);
-                printf("---\n" );
-
+                // printf("---\n" );
+                _delay_ms(3000);
             }
+            // matlab_end();
         }
         case 2:{ //轉彎
             robot_turn_right(3400);
-            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {}
-            robot_go_back(2000);
-            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {}
-            robot_turn_right(6800);
-            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {}
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                // printf("--\n");
+                _delay_ms(400);
+            }
+            robot_go_ahead(2500);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                // printf("--\n");
+                _delay_ms(400);
+            }
+            robot_turn_right(7000);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                // printf("--\n");
+                _delay_ms(400);
+            }
+            robot_go_ahead(1750);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                // printf("--\n");
+                _delay_ms(400);
+            }
+            servo_set(SERVO_GRIPPING,180);
+            _delay_ms(2000);
+            robot_go_back(1500);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                // printf("--\n");
+                _delay_ms(400);
+            }
+            matlab_end();
         }
         case 3:{
             ;
@@ -427,7 +487,7 @@ void robot_turn_left(uint32_t target_micro_secs) {
 /*=== Matlab function =====================================*/
 void matlab_start_point(uint16_t* data) {
     printf("Start-----\n");
-    scanf("%d\n", data);
+    scanf("%d", data);
 }
 void matlab_end(uint16_t* data) {
     printf("End-------\n");
@@ -435,15 +495,15 @@ void matlab_end(uint16_t* data) {
 
 void matlab_get_rear_road_info(uint16_t* data,uint16_t* x,uint16_t* y) {
     printf("RareDeg---\n");
-    scanf("%d\n", data);
-    scanf("%d\n", x);
-    scanf("%d\n", y);
+    scanf("%d", data);
+    scanf("%d", x);
+    scanf("%d", y);
 }
 void matlab_get_front_road_info(uint16_t* data,uint16_t* x,uint16_t* y) {
     printf("FrontDeg---\n");
-    scanf("%d\n", data);
-    scanf("%d\n", x);
-    scanf("%d\n", y);
+    scanf("%d", data);
+    scanf("%d", x);
+    scanf("%d", y);
 }
 void matlab_get_coke_info(uint16_t* position,uint16_t* distance) {
     /* code */
