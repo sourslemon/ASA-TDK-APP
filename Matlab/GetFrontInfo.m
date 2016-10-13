@@ -3,6 +3,7 @@ function [m,deg,x_position,y_position] = GetFrontInfo()
 cam = webcam('USB2.0_Camera');
 I = snapshot(cam);
 I = imrotate(I,270);
+I = I(1:500,:,:);
 % imshow(I)
 % I=imread('road2.png');
 
@@ -65,6 +66,6 @@ mid_bottom = [( boundary(I1,1) + boundary(I4,1) )/2 , ( boundary(I1,2) + boundar
 % plot(mid_top(2),mid_top(1), 'g*');
 
 m = (mid_top(1)-mid_bottom(1)) / (mid_top(2)-mid_bottom(2));
-deg = atan(1/m)* 180/pi
+deg = atan(1/m)* 180/pi;
 x_position = centroids(1) - 240;
 y_position = centroids(2) - 320;

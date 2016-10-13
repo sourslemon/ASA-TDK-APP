@@ -1,16 +1,16 @@
 clc;clear;
 cam = webcam(2);
-cam = webcam('USB2.0 PC CAMERA');
-pause(3)
+cam = webcam('USB2.0_Camera');
 I = snapshot(cam);
-I=imrotate(I,180);
+I = imrotate(I,270);
+ I = I(1:500,:,:);
 % I=imread('road2.png');
 Ir = I(:,:,1);
 Ig = I(:,:,2);
 Ib = I(:,:,3);
 Cr = 1;
-Cg = 0;
-Cb = 0;
+Cg = 1;
+Cb = 1;
 % 158,179,200
 Inew = Ir*Cr + Ib*Cb + Ig*Cg;
 % Inew = I;

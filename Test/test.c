@@ -53,6 +53,7 @@ void motor_check_time();
 
 /*=== Matlab function ====================================*/
 void matlab_start_point(uint16_t* data);
+void matlab_end();
 void matlab_get_coke_info(uint16_t* position,uint16_t* distance);
 void matlab_get_rear_road_info(uint16_t* data,uint16_t* x,uint16_t* y);
 void matlab_get_front_road_info(uint16_t* data,uint16_t* x,uint16_t* y);
@@ -61,9 +62,12 @@ void matlab_get_front_road_info(uint16_t* data,uint16_t* x,uint16_t* y);
 /*=== Robot function =====================================*/
 void robot_go_ahead(uint32_t target_micro_secs);
 void robot_go_back(uint32_t target_micro_secs);
-void robot_go_up(uint8_t way,uint32_t target_micro_secs);
 void robot_turn_right(uint32_t target_micro_secs);
 void robot_turn_left(uint32_t target_micro_secs);
+void robot_go_up(uint32_t target_micro_secs);
+void robot_go_down(uint32_t target_micro_secs);
+
+void robot_go_ahead_feedback(uint16_t front_x,uint16_t rear_x,uint16_t deg);
 /*========================================================*/
 
 
@@ -117,67 +121,9 @@ int main()
                 matlab_get_rear_road_info(&rear_deg,&rear_x,&rear_y);
                 matlab_get_front_road_info(&front_deg,&front_x,&front_y);
                 deg = (rear_deg + front_deg)/2;
-                if ( front_x >0 && rear_x >0) {
-                    if (deg < -1000) {
-                        motor_set(MOTOR_RIGHT,1,200);
-                    	motor_set(MOTOR_LEFT, 2,500);
-                    } else if (deg >= -1000 && deg < -500) {
-                        motor_set(MOTOR_RIGHT,1,300);
-                    	motor_set(MOTOR_LEFT, 2,500);
-                    } else if (deg >= -500 && deg < -100) {
-                        motor_set(MOTOR_RIGHT,1,400);
-                    	motor_set(MOTOR_LEFT, 2,500);
-                    } else if (deg >= -100 && deg < 100) {
-                        motor_set(MOTOR_RIGHT,1,500);
-                    	motor_set(MOTOR_LEFT, 2,500);
-                        if( front_x >100){
-                            motor_set(MOTOR_LEFT, 2,500);
-                            motor_set(MOTOR_RIGHT,1,400);
-                        }
-                    } else if (deg >= 100 && deg < 500) {
-                        motor_set(MOTOR_RIGHT,1,500);
-                    	motor_set(MOTOR_LEFT, 2,500);
-                    } else if (deg >= 500 && deg < 1000) {
-                        motor_set(MOTOR_RIGHT,1,500);
-                    	motor_set(MOTOR_LEFT, 2,500);
-                    } else if (deg >= 1000) {
-                        motor_set(MOTOR_RIGHT,1,500);
-                    	motor_set(MOTOR_LEFT, 2,400);
-                    } else {
-                        /* code */
-                    }
-                }
-                else if ( front_x <0 && rear_x <0) {
-                    if (deg < -1000) {
-                        motor_set(MOTOR_RIGHT,1,500);
-                    	motor_set(MOTOR_LEFT, 1,400);
-                    } else if (deg >= -1000 && deg < -500) {
-                        motor_set(MOTOR_RIGHT,1,500);
-                    	motor_set(MOTOR_LEFT, 1,500);
-                    } else if (deg >= -500 && deg < -100) {
-                        motor_set(MOTOR_RIGHT,1,500);
-                    	motor_set(MOTOR_LEFT, 1,500);
-                    } else if (deg >= -100 && deg < 100) {
-                        motor_set(MOTOR_RIGHT,1,500);
-                    	motor_set(MOTOR_LEFT, 1,500);
-                        if( front_x <-100){
-                            motor_set(MOTOR_LEFT, 1,400);
-                            motor_set(MOTOR_RIGHT,1,500);
-                        }
-                    } else if (deg >= 100 && deg < 500) {
-                        motor_set(MOTOR_RIGHT,1,500);
-                    	motor_set(MOTOR_LEFT, 1,400);
-                    } else if (deg >= 5 && deg < 10) {
-                        motor_set(MOTOR_RIGHT,1,500);
-                    	motor_set(MOTOR_LEFT, 1,300);
-                    } else if (deg >= 1000) {
-                        motor_set(MOTOR_RIGHT,1,500);
-                    	motor_set(MOTOR_LEFT, 1,200);
-                    } else {
-                        /* code */
-                    }
-                }
-                // matlab_get_front_deg(&deg_front);
+
+                // robot_go_ahead_feedback(front_x,rear_x,deg);
+                // matlab_get_front_deg(&deg_front)
                 // printf("---\n" );
                 _delay_ms(3000);
             }
@@ -186,35 +132,181 @@ int main()
         case 2:{ //轉彎
             robot_turn_right(3400);
             while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
-                // printf("--\n");
+                printf("--\n");
                 _delay_ms(400);
             }
             robot_go_ahead(2500);
             while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
-                // printf("--\n");
+                printf("--\n");
                 _delay_ms(400);
             }
             robot_turn_right(7000);
             while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
-                // printf("--\n");
+                printf("--\n");
                 _delay_ms(400);
             }
             robot_go_ahead(1750);
             while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
-                // printf("--\n");
+                printf("--\n");
                 _delay_ms(400);
             }
             servo_set(SERVO_GRIPPING,180);
             _delay_ms(2000);
             robot_go_back(1500);
             while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
-                // printf("--\n");
+                printf("--\n");
+                _delay_ms(400);
+            }
+            matlab_end();
+            break;
+        }
+        case 3:{
+            robot_go_ahead(2500);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                _delay_ms(400);
+            }
+            robot_turn_right(3000);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                _delay_ms(400);
+            }
+            robot_go_ahead(2500);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                _delay_ms(400);
+            }
+            robot_turn_right(3800);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                _delay_ms(400);
+            }
+
+            matlab_end();
+        }
+
+        case 5:{
+            servo_set(SERVO_GRIPPING,180);
+            _delay_ms(2000);
+            robot_go_back(1500);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
                 _delay_ms(400);
             }
             matlab_end();
         }
-        case 3:{
-            ;
+        case 6:{
+            robot_turn_right(1750);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            robot_go_ahead(2000);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            robot_turn_right(1800);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            matlab_end();
+        }
+        case 7:{
+            robot_go_ahead(10000);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            robot_turn_right(1750);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            robot_go_ahead(2000);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            robot_turn_right(1800);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            robot_go_ahead(2000);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            matlab_end();
+        }
+
+        case 8:{
+            robot_go_ahead(2800);//145cm/2
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                _delay_ms(400);
+            }
+            robot_turn_right(3200);//83deg
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            robot_go_ahead(6100);//177cm
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                _delay_ms(400);
+            }
+            robot_turn_left(3200);//
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            robot_go_up(7241);//210cm
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                _delay_ms(400);
+            }
+        }
+
+        case 9:{
+            robot_go_ahead(7241);//210cm
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                _delay_ms(400);
+            }
+            robot_turn_left(3200);//83deg
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            robot_go_ahead(6100);//177cm
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                _delay_ms(400);
+            }
+            robot_turn_right(3200);//
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            robot_go_up(4862);//141cm
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                _delay_ms(400);
+            }
+        }
+        case 10:{
+            robot_turn_right(3400);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+
+            robot_go_ahead(14000); //290cm
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+        }
+
+        case 99:{
+            robot_go_up(10000);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                _delay_ms(400);
+            }
+            matlab_end();
         }
     }
     /*=== start ==========================================*/
@@ -465,8 +557,12 @@ void robot_go_back(uint32_t target_micro_secs) {
 	motor_go_time(MOTOR_RIGHT,target_micro_secs);
 	motor_go_time(MOTOR_LEFT ,target_micro_secs);
 }
-void robot_go_up(uint8_t way,uint32_t target_micro_secs) {
-	motor_set(MOTOR_Y,1+way,200);
+void robot_go_up(uint32_t target_micro_secs) {
+	motor_set(MOTOR_Y,1,200);
+	motor_go_time(MOTOR_Y,target_micro_secs);
+}
+void robot_go_down(uint32_t target_micro_secs) {
+	motor_set(MOTOR_Y,2,200);
 	motor_go_time(MOTOR_Y,target_micro_secs);
 }
 void robot_turn_right(uint32_t target_micro_secs) {
@@ -482,28 +578,95 @@ void robot_turn_left(uint32_t target_micro_secs) {
  	motor_go_time(MOTOR_LEFT ,target_micro_secs);
 }
 
+void robot_go_ahead_feedback(uint16_t front_x,uint16_t rear_x,uint16_t deg){
+    if ( front_x >0 && rear_x >0) {
+        if (deg < -1000) {
+            motor_set(MOTOR_RIGHT,1,200);
+            motor_set(MOTOR_LEFT, 2,500);
+        } else if (deg >= -1000 && deg < -500) {
+            motor_set(MOTOR_RIGHT,1,300);
+            motor_set(MOTOR_LEFT, 2,500);
+        } else if (deg >= -500 && deg < -100) {
+            motor_set(MOTOR_RIGHT,1,400);
+            motor_set(MOTOR_LEFT, 2,500);
+        } else if (deg >= -100 && deg < 100) {
+            motor_set(MOTOR_RIGHT,1,500);
+            motor_set(MOTOR_LEFT, 2,500);
+            if( front_x >100){
+                motor_set(MOTOR_LEFT, 2,500);
+                motor_set(MOTOR_RIGHT,1,400);
+            }
+        } else if (deg >= 100 && deg < 500) {
+            motor_set(MOTOR_RIGHT,1,500);
+            motor_set(MOTOR_LEFT, 2,500);
+        } else if (deg >= 500 && deg < 1000) {
+            motor_set(MOTOR_RIGHT,1,500);
+            motor_set(MOTOR_LEFT, 2,500);
+        } else if (deg >= 1000) {
+            motor_set(MOTOR_RIGHT,1,500);
+            motor_set(MOTOR_LEFT, 2,400);
+        } else {
+        }
+    }
+    else if ( front_x <0 && rear_x <0) {
+        if (deg < -1000) {
+            motor_set(MOTOR_RIGHT,1,500);
+            motor_set(MOTOR_LEFT, 1,400);
+        } else if (deg >= -1000 && deg < -500) {
+            motor_set(MOTOR_RIGHT,1,500);
+            motor_set(MOTOR_LEFT, 1,500);
+        } else if (deg >= -500 && deg < -100) {
+            motor_set(MOTOR_RIGHT,1,500);
+            motor_set(MOTOR_LEFT, 1,500);
+        } else if (deg >= -100 && deg < 100) {
+            motor_set(MOTOR_RIGHT,1,500);
+            motor_set(MOTOR_LEFT, 1,500);
+            if( front_x <-100){
+                motor_set(MOTOR_LEFT, 1,400);
+                motor_set(MOTOR_RIGHT,1,500);
+            }
+        } else if (deg >= 100 && deg < 500) {
+            motor_set(MOTOR_RIGHT,1,500);
+            motor_set(MOTOR_LEFT, 1,400);
+        } else if (deg >= 5 && deg < 10) {
+            motor_set(MOTOR_RIGHT,1,500);
+            motor_set(MOTOR_LEFT, 1,300);
+        } else if (deg >= 1000) {
+            motor_set(MOTOR_RIGHT,1,500);
+            motor_set(MOTOR_LEFT, 1,200);
+        } else {
+            /* code */
+        }
+
+    }
+}
 /*========================================================*/
 
 /*=== Matlab function =====================================*/
 void matlab_start_point(uint16_t* data) {
-    printf("Start-----\n");
+    printf("Start----------\n");
     scanf("%d", data);
 }
-void matlab_end(uint16_t* data) {
-    printf("End-------\n");
+void matlab_end() {
+    printf("End------------\n");
 }
 
 void matlab_get_rear_road_info(uint16_t* data,uint16_t* x,uint16_t* y) {
-    printf("RareDeg---\n");
+    printf("RareInfo-------\n");
     scanf("%d", data);
     scanf("%d", x);
     scanf("%d", y);
 }
 void matlab_get_front_road_info(uint16_t* data,uint16_t* x,uint16_t* y) {
-    printf("FrontDeg---\n");
+    printf("FrontInfo------\n");
     scanf("%d", data);
     scanf("%d", x);
     scanf("%d", y);
+}
+void matlab_get_micro_sec_1(uint16_t id,uint16_t* data) {
+    printf("GetMicroSec----\n");
+    printf("%02d-------------\n",id);
+    scanf("%d", data);
 }
 void matlab_get_coke_info(uint16_t* position,uint16_t* distance) {
     /* code */

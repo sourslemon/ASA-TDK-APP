@@ -4,7 +4,7 @@ cam = webcam('USB2.0 PC CAMERA');
 % pause(3)
 I = snapshot(cam);
 I = imrotate(I,180);
-% imshow(I)
+imshow(I)
 % I = snapshot(cam);
 % I = imrotate(I,270);
 % imshow(I)
@@ -69,6 +69,6 @@ mid_bottom = [( boundary(I1,1) + boundary(I4,1) )/2 , ( boundary(I1,2) + boundar
 % plot(mid_top(2),mid_top(1), 'g*');
 
 m = (mid_top(1)-mid_bottom(1)) / (mid_top(2)-mid_bottom(2));
-deg = atan(1/m)* 180/pi
+deg = atan(1/m)* 180/pi;
 x_position = centroids(1) - 320;
 y_position = centroids(2) - 240;

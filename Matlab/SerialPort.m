@@ -15,19 +15,25 @@ set(ASA_PC, 'StopBit', 1);
 set(ASA_PC, 'Timeout',1000);
 
 fopen(ASA_PC);
+
 i = 1;
 a = 1;
-start_point =2;
+start_point =1;
+
 while 1
     if ASA_PC.BytesAvailable > 0
-        data = fgets(ASA_PC);
         fprintf('i = %d,BytesAvailable = %d \n',i,ASA_PC.BytesAvailable);
-%         data
-
-
+        data = fgets(ASA_PC);
+        data
+        
+        
         if mean( data(1) == 'S' ) == 1
             fprintf(ASA_PC,'%d\n',start_point);
         end
+        
+%          if mean( data(1:5) == 'GetMicroSec1' ) == 1
+%             fprintf(ASA_PC,'%d\n',start_point);
+%         end
 
         if mean( data(1) == 'R' ) == 1
             [m,deg,x,y] = GetRearInfo();
@@ -51,7 +57,7 @@ while 1
             break
         end
     end
-%     pause(0.2);
+    %pause(0.2);
     i=i+1;
 end
 
