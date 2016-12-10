@@ -18,7 +18,7 @@ fopen(ASA_PC);
 
 i = 1;
 a = 1;
-start_point =1;
+start_point =5;
 
 while 1
     if ASA_PC.BytesAvailable > 0

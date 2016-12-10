@@ -77,9 +77,6 @@ void main()
     uint8_t angel_1=0;
     uint8_t angel_2=0;
     uint8_t motor_status=0;
-
-
-
     while (1) {
         DIO_fgt(0,0xFF,0,&data);
         // printf("%d\n", data);
@@ -102,7 +99,7 @@ void main()
             }
         }
 
-        if (data & 0x10) {
+        if (data & 0x40) {
             if (angel_2>180) {
                 angel_2=180;
             }else{
@@ -110,7 +107,7 @@ void main()
                 servo_set( SERVO_ROTATING , angel_2 );
                 printf("10-%d\n",angel_2);
             }
-        } else if (data & 0x20) {
+        } else if (data & 0x80) {
             if (angel_2==0) {
                 angel_2=1;
             }else{
@@ -120,22 +117,22 @@ void main()
             }
         }
 
-        if (data & 0x04) {
+        if (data & 0x10) {
             motor_set(MOTOR_RIGHT,0,ENABLE);
-            motor_set(MOTOR_RIGHT,1,300);
-        } else if (data & 0x08) {
+            motor_set(MOTOR_RIGHT,1,500);
+        } else if (data & 0x20) {
             motor_set(MOTOR_RIGHT,0,ENABLE);
-            motor_set(MOTOR_RIGHT,2,300);
+            motor_set(MOTOR_RIGHT,2,500);
         }else{
             motor_set(MOTOR_RIGHT,0,DISABLE);
         }
 
-        if (data & 0x80) {
+        if (data & 0x04) {
             motor_set(MOTOR_LEFT, 0,ENABLE);
-            motor_set(MOTOR_LEFT, 1,300);
-        } else if (data & 0x40) {
+            motor_set(MOTOR_LEFT, 1,500);
+        } else if (data & 0x08) {
             motor_set(MOTOR_LEFT, 0,ENABLE);
-            motor_set(MOTOR_LEFT, 2,300);
+            motor_set(MOTOR_LEFT, 2,500);
         }else{
             motor_set(MOTOR_LEFT, 0,DISABLE);
         }
@@ -161,15 +158,17 @@ void TIMER2_OVF_reg (void (*function)(void)){
 
 /*=== Timer3 functioin ================================*/
 void TIMER3_init(){
-    //Configure TIMER3
-	TCCR3A|=(1<<COM3B1)|(1<<COM3C1)|(1<<WGM31);        //NON Inverted PWM (enable OCR1A,OCR1B)
+    //Configure TIMER1
+	TCCR3A|=(1<<COM3A1)|(1<<COM3B1)|(1<<COM3C1)|(1<<WGM31);        //NON Inverted PWM (enable OCR1A,OCR1B)
 	TCCR3B|=(1<<WGM33)|(1<<WGM32)|(1<<CS31)|(0<<CS30); //PRESCALER=8 MODE 14(FAST PWM)
 
 	ICR3=27992;  //fPWM=50Hz (Period = 20ms Standard).
     //PRESCALER=8 ICR1=27992
     //PRESCALER=64 ICR1=3499
 
-    DDRE|=(1<<PE4)|(1<<PE5);   //PWM Pins as Out
+    DDRE  |=(1<<PE4)|(1<<PE5);   //PWM Pins as Out
+    PORTE &=~(1<<PE4);
+    PORTE &=~(1<<PE5);
 }
 /*=====================================================*/
 

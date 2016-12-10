@@ -116,7 +116,12 @@ int main()
 
         case 1:{ //走到冰箱
             // 12s 290cm
-            robot_go_ahead(14000);
+            robot_turn_left(1700);
+            while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
+                printf("--\n");
+                _delay_ms(400);
+            }
+            robot_go_ahead(12000);
             while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
                 matlab_get_rear_road_info(&rear_deg,&rear_x,&rear_y);
                 matlab_get_front_road_info(&front_deg,&front_x,&front_y);
@@ -145,7 +150,7 @@ int main()
                 printf("--\n");
                 _delay_ms(400);
             }
-            robot_go_ahead(1750);
+            robot_go_ahead(1950);
             while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
                 printf("--\n");
                 _delay_ms(400);
@@ -184,7 +189,7 @@ int main()
         case 5:{
             servo_set(SERVO_GRIPPING,180);
             _delay_ms(2000);
-            robot_go_back(1500);
+            robot_go_back(2500);
             while (MOTOR_TIME_ENABLE[MOTOR_LEFT] && MOTOR_TIME_ENABLE[MOTOR_RIGHT]) {
                 printf("--\n");
                 _delay_ms(400);
@@ -299,6 +304,34 @@ int main()
                 printf("--\n");
                 _delay_ms(400);
             }
+        }
+
+        case 21:{
+            servo_set(SERVO_GRIPPING,170);
+            _delay_ms(2000);
+            matlab_end();
+            break;
+        }
+        case 22:{
+            servo_set(SERVO_ROTATING,110);
+            _delay_ms(2000);
+            servo_set(SERVO_ROTATING,0);
+            matlab_end();
+            break;
+        }
+        case 23:{
+            servo_set(SERVO_ROTATING,130);
+            _delay_ms(2000);
+            servo_set(SERVO_ROTATING,0);
+            matlab_end();
+            break;
+        }
+        case 24:{
+            servo_set(SERVO_ROTATING,130);
+            _delay_ms(2000);
+            servo_set(SERVO_ROTATING,0);
+            matlab_end();
+            break;
         }
 
         case 99:{
