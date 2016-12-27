@@ -150,12 +150,6 @@ int main(void)
 			check = motor_set(MOTOR_RIGHT,1,500);
 			check = motor_set(MOTOR_LEFT ,1,0);
 		}
-		// if ( S2 && S3 && S4) {
-		// 	// 到T字形
-		// 	check = motor_set(MOTOR_RIGHT,1,0);
-		// 	check = motor_set(MOTOR_LEFT ,1,0);
-		// }
-
 	}
 }
 /*================================================*/

@@ -54,8 +54,6 @@ uint32_t Time_Count = 0;
 
 uint32_t Motor_Y_position = 0;
 
-uint8_t S1,S2,S3,S4,S5;
-
 int main(void)
 {
 	ASA_M128_set();
@@ -78,8 +76,6 @@ int main(void)
 	check = motor_set(MOTOR_Y,1,0);
 	printf("%d\n", check);
 
-	char data=0;
-
 	// int id,mode,data;
 	// while (1) {
 	// 	printf("\nID:");
@@ -101,61 +97,34 @@ int main(void)
 	cli();
 	// sei();
 
-	check = motor_set(MOTOR_RIGHT,0,ENABLE);
-	printf("%d\n", check);
-	check = motor_set(MOTOR_LEFT, 0,ENABLE);
-	printf("%d\n", check);
-	check = motor_set(MOTOR_Y, 0,ENABLE);
-	printf("%d\n", check);
-	check = motor_set(MOTOR_RIGHT,1,0);
-	printf("%d\n", check);
-	check = motor_set(MOTOR_LEFT, 1,0);
-	printf("%d\n", check);
-	check = motor_set(MOTOR_Y,1,0);
-	printf("%d\n", check);
-
 	while (1) {
+		printf("\ninput target_steps:");
+		scanf("%d",&target_time);
+		// printf("\ninput way:");
+		// scanf("%d",&way);
+		// printf("\ninput way:");
+		// scanf("%d",&way);
+		// printf("\ninput id:");
+		// scanf("%d",&id);
+		sei();
+		go_ahead(target_time);
 
-		DIO_fgt(2,0xFF,0,&data);
-		S1 = !( (data>>3) & 1);
-		S2 = !( (data>>4) & 1);
-		S3 = !( (data>>5) & 1);
-		S4 = !( (data>>6) & 1);
-		S5 = !( (data>>7) & 1);
+		printf("\ninput target_steps:");
+		scanf("%d",&target_time);
+		turn_left(target_time);
 
-		printf("%d %d %d\n",S2,S3,S4);
+		printf("\ninput target_steps:");
+		scanf("%d",&target_time);
+		turn_left(target_time);
 
-		if ( !S2 && S3 && !S4) {
-			// 直走
-			check = motor_set(MOTOR_RIGHT,1,500);
-			check = motor_set(MOTOR_LEFT ,1,500);
-		}
-		if ( S2 && S3 && !S4) {
-			// 左轉
-			check = motor_set(MOTOR_RIGHT,1,0);
-			check = motor_set(MOTOR_LEFT ,1,500);
-		}
-		if ( S2 && !S3 && !S4) {
-			// 左轉
-			check = motor_set(MOTOR_RIGHT,1,0);
-			check = motor_set(MOTOR_LEFT ,1,500);
-		}
-		if ( !S2 && S3 && S4) {
-			// 右轉
-			check = motor_set(MOTOR_RIGHT,1,500);
-			check = motor_set(MOTOR_LEFT ,1,0);
-		}
-		if ( !S2 && !S3 && S4) {
-			// 右轉
-			check = motor_set(MOTOR_RIGHT,1,500);
-			check = motor_set(MOTOR_LEFT ,1,0);
-		}
-		// if ( S2 && S3 && S4) {
-		// 	// 到T字形
-		// 	check = motor_set(MOTOR_RIGHT,1,0);
-		// 	check = motor_set(MOTOR_LEFT ,1,0);
-		// }
 
+		// go_up(way,target_time);
+
+		// check = motor_set(id,way,500);
+		// printf("%d\n", check);
+		//
+		// motor_go_steps(id,target_cycle);
+		// motor_go_time(id,target_cycle);
 	}
 }
 /*================================================*/

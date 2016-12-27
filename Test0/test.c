@@ -4,6 +4,12 @@
  */
 #include "ASA_Lib.h"
 
+/*=== Servo Funtion Define ===============================*/
+#define SERVO_GRIPPING 0
+#define SERVO_ROTATING 1
+/*========================================================*/
+
+
 /*=== Gereral Define =============================*/
 #define SET_START_LSBYTE 200
 #define PUT_START_LSBYTE 0
@@ -21,6 +27,15 @@
 #define MOTOR_Z 3 // stretching
 /*================================================*/
 
+/*=== Timer3 function ====================================*/
+void TIMER3_init();
+/*========================================================*/
+
+/*=== Servo funcion ======================================*/
+void servo_init();
+uint8_t servo_set(uint8_t id,uint8_t target_angle);
+// TODO 是否增加低轉速模式 (每段時間增加定值，直到達到目標值 )
+/*========================================================*/
 /*=== Timer2 Function ============================*/
 void TIMER2_init();
 void TIMER2_OVF_reg (void (*function)(void));
@@ -64,6 +79,9 @@ int main(void)
 	uint8_t  check = 0;
 	uint16_t pwm_data=0;
 	// PORTE_init();
+
+	TIMER3_init();
+	servo_init();
 
 	check = motor_set(MOTOR_RIGHT,0,ENABLE);
 	printf("%d\n", check);
@@ -150,11 +168,27 @@ int main(void)
 			check = motor_set(MOTOR_RIGHT,1,500);
 			check = motor_set(MOTOR_LEFT ,1,0);
 		}
-		// if ( S2 && S3 && S4) {
-		// 	// 到T字形
-		// 	check = motor_set(MOTOR_RIGHT,1,0);
-		// 	check = motor_set(MOTOR_LEFT ,1,0);
-		// }
+		if ( S2 && S3 && S4) {
+			// 到T字形
+			check = motor_set(MOTOR_RIGHT,1,0);
+			check = motor_set(MOTOR_LEFT ,1,0);
+			_delay_ms(2000);
+			check = motor_set(MOTOR_LEFT ,1,500);
+			check = motor_set(MOTOR_RIGHT,1,500);
+			_delay_ms(5000);
+			check = motor_set(MOTOR_RIGHT,1,0);
+			check = motor_set(MOTOR_LEFT ,1,0);
+			_delay_ms(500);
+			servo_set(SERVO_GRIPPING,180);
+			_delay_ms(1000);
+			check = motor_set(MOTOR_LEFT ,2,500);
+			check = motor_set(MOTOR_RIGHT,2,500);
+			_delay_ms(3000);
+			break;
+
+
+
+		}
 
 	}
 }
@@ -364,3 +398,56 @@ void turn_left(uint32_t target_micro_secs) {
 //2s : 555  mm
 //3s : 840  mm
 //4s : 1071 mm
+
+
+/*=== Servo funcion ======================================*/
+void servo_init() {
+    //以大角度啟動後復位到0度
+    servo_set(SERVO_GRIPPING,30);
+    servo_set(SERVO_ROTATING,30);
+    _delay_ms(500);
+    servo_set(SERVO_GRIPPING,0);
+    servo_set(SERVO_ROTATING,0);
+}
+uint8_t servo_set(uint8_t id,uint8_t target_angle){
+    // 0.00052643 (ms/per_val)
+    // min = 700  (? ms) 0 degree
+    // max = 3300 (? ms) 180 degree
+    // TODO 觀察 OCR-角度 或 ms-角度 是否呈現線性關係 YES
+    // TODO 是否增加低轉速模式 (每段時間增加定值，直到達到目標值
+
+    //(2720-640)/180 = 11.55 (degree/per_arget_data)
+    if (target_angle>180) { return 3;}
+
+    float rate = (3300-700)/180; //(14.44)
+
+    uint16_t target_data = (float)target_angle * rate + 700;
+    // printf("%d\n", target_data);
+    if (id == 0) {
+        OCR3C = target_data;
+    } else if (id == 1) {
+        OCR3B = target_data;
+    } else {
+        return 1;
+    }
+
+    return 0;
+    // return 0:沒問題, 1:wrong ID, 2:wrong mode, 3:wrong data
+}
+/*========================================================*/
+
+/*=== Timer3 functioin ===================================*/
+void TIMER3_init(){
+    //Configure TIMER1
+	TCCR3A|=(1<<COM3A1)|(1<<COM3B1)|(1<<COM3C1)|(1<<WGM31);        //NON Inverted PWM (enable OCR1A,OCR1B)
+	TCCR3B|=(1<<WGM33)|(1<<WGM32)|(1<<CS31)|(0<<CS30); //PRESCALER=8 MODE 14(FAST PWM)
+
+	ICR3=27992;  //fPWM=50Hz (Period = 20ms Standard).
+    //PRESCALER=8 ICR1=27992
+    //PRESCALER=64 ICR1=3499
+
+    DDRE  |=(1<<PE4)|(1<<PE5);   //PWM Pins as Out
+    PORTE &=~(1<<PE4);
+    PORTE &=~(1<<PE5);
+}
+/*========================================================*/

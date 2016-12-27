@@ -98,8 +98,6 @@ int main()
 	motor_set(MOTOR_RIGHT,1,0);
 	motor_set(MOTOR_LEFT, 1,0);
 	motor_set(MOTOR_Y,1,0);
-
-    servo_set(SERVO_GRIPPING,180);
     /*=== init ===========================================*/
 
     /*=== start ==========================================*/
