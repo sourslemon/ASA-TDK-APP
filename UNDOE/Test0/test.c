@@ -10,13 +10,7 @@
 /*========================================================*/
 
 
-/*=== Gereral Define =============================*/
-#define SET_START_LSBYTE 200
-#define PUT_START_LSBYTE 0
 
-#define DISABLE 0
-#define ENABLE  1
-/*================================================*/
 
 /*=== Motor Function Define ======================*/
 #define PWM_1_ASA_ID 1
@@ -42,10 +36,7 @@ void TIMER2_OVF_reg (void (*function)(void));
 void (*TIMER2_OVF_fun)()=0;
 /*================================================*/
 
-/*=== INT function ===============================*/
-void PORTE_init();
-void INT_set(char INT_num,char mode);
-/*================================================*/
+
 
 /*=== Motor function==============================*/
 uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data);
@@ -199,178 +190,8 @@ void PORTE_init() { //initialize PORTE 4~7 bits
 	PORTE = 0xF0;
 }
 
-/*=== INT function ===============================*/
-void INT_set(char INT_num, char mode) {
-	// mode 0:low level trigger
-	// mode 1:logic change trigger
-	// mode 2:falling edge trigger
-	// mode 3:rising edge trigger
-	if (INT_num<4) {
-		// EICRA |= (mode)<<(INT_num*2);
-		return;
-	}else{
-		DDRE  &= ~(1<<INT_num);
-		PORTE |= (1<<INT_num);
-		EICRB |= (mode)<<((INT_num - 4)*2);
-	}
-	EIMSK |= (1<<INT_num);
-}
-void INT_cls(char INT_num) {
-	if (INT_num<4) {
-		return;
-	}else{
-		DDRE  |=  (1<<INT_num);
-		PORTE &= ~(1<<INT_num);
-	}
-	EIMSK &= ~(1<<INT_num);
-}
-/*================================================*/
 
-/*=== INT_vect ===================================*/
-ISR(INT4_vect){
-	motor_check_steps(MOTOR_Z);
-}
-ISR(INT5_vect){
-	motor_check_steps(MOTOR_Y);
-}
-ISR(INT6_vect){
-	motor_check_steps(MOTOR_LEFT);
-}
-ISR(INT7_vect){
-	motor_check_steps(MOTOR_RIGHT);
-}
-/*================================================*/
 
-/*=== Timer2 Function ============================*/
-ISR(TIMER2_COMP_vect){
-	// 1單位為0.001ms , uint32_t 可記錄 2^32/1000/60/60 = 1193.04647hr
-	Time_Count++;
-	// printf("%d\n", Time_Count);
-	motor_check_time();
-	// TIMER2_OVF_fun();
-}
-void TIMER2_init(){
-	TCCR2  = 0;
-	TCCR2 |= (1<<WGM21) | (0<<WGM20); // CTC mode
-	TCCR2 |= (0<<COM21) | (0<<COM20); // no Compare Output
-    TCCR2 |= (0<<CS22)  | (1<<CS21) | (1<<CS20); // set up timer with prescaler = 64
-    TCNT2  = 0;	// initialize counter
-    TIMSK |= (1<<OCIE2) | (0<<TOIE2); // Output Compare Match Interrupt Enable
-	OCR2 = 171; // f = 11059200/64/(1+171) = 1004.65116, see as 1000hz, err = 0.5%
-	printf("TCCR2 = %d, TIMSK = %d\n", TCCR2, TIMSK);
-}
-void TIMER2_OVF_reg (void (*function)(void)){
-	TIMER2_OVF_fun=function;
-}
-/*================================================*/
-
-/*=== Motor function =============================*/
-uint8_t motor_set(uint8_t motor_ID, uint8_t mode, uint16_t data) {
-	uint8_t pwm_asa_id = 0;
-	uint8_t pwm_channel = 0;
-	uint8_t check = 0;
-	static uint8_t enable_status[2]={0};
-
-	if (motor_ID == 0 || motor_ID == 1 ) {
-		pwm_asa_id  = PWM_1_ASA_ID;
-		pwm_channel = motor_ID+1;
-	} else if (motor_ID == 2 || motor_ID == 3) {
-		pwm_asa_id  = PWM_2_ASA_ID;
-		pwm_channel = motor_ID-1;
-	} else {
-		return 1;
-	}
-
-	// mode 0:開關PWM, 1:正轉, 2:反轉
-	switch (mode) {
-		case 0:
-			if (data!=0 && data!=1) { return 3; }
-			if (data==0) {
-				enable_status[pwm_asa_id-1] &= ~(1<<(pwm_channel-1));
-			} else if (data==1) {
-				enable_status[pwm_asa_id-1] |= 1<<(pwm_channel-1);
-			}
-			data = enable_status[pwm_asa_id-1];
-			check = ASA_PWM00_set(pwm_asa_id, SET_START_LSBYTE,3,0, data);
-			// printf("%d\n", enable_status[pwm_asa_id-1]);
-			// printf("debug1 = %d,%d,%d,%d,%d\n",pwm_asa_id,SET_START_LSBYTE,(1<<(pwm_channel-1)),pwm_channel-1,data);
-			// check = ASA_PWM00_set(pwm_asa_id, SET_START_LSBYTE, (1<<(pwm_channel-1)), pwm_channel-1, data);
-			if (check!=0) { return 10+check; }
-			break;
-		case 1:
-			if (data>511) { return 3; }
-			data = 511-data;
-			check = ASA_PWM00_put(pwm_asa_id, (PUT_START_LSBYTE + pwm_channel*2-2), 2, &data);
-			// printf("debug2 = %d,%d,%d,%d\n",pwm_asa_id,(PUT_START_LSBYTE + pwm_channel*2 - 2),2,data);
-			if (check!=0) { return 10+check; }
-			break;
-		case 2:
-			if (data>=511) { return 3; }
-			data = data+512;
-			check = ASA_PWM00_put(pwm_asa_id, (PUT_START_LSBYTE + pwm_channel*2-2), 2, &data);
-			// printf("debug3 = %d,%d,%d,%d\n",pwm_asa_id,(PUT_START_LSBYTE + pwm_channel*2 - 2),2,data);
-			if (check!=0) { return 10+check; }
-			break;
-		default:
-			return 2;
-	}
-
-	return 0;
-	// return 0:沒問題, 1:wrong ID, 2:wrong mode, 3:wrong data, 1x:ASA_PWM錯誤 X為PWM錯誤代碼
-}
-
-uint8_t motor_go_steps(uint8_t id, uint16_t steps){
-	motor_set(id,0,ENABLE);
-	MOTOR_IS_ENABLE[id]=1;
-	MOTOR_COUNT[id]=0;
-	MOTOR_TARGET_STEPS[id]=steps;
-
-	INT_set(7-id,3);
-
-	return 0;
-}
-
-void motor_check_steps(uint8_t id) {
-	printf("--\n");
-	if (MOTOR_IS_ENABLE[id]) {
-		if ( MOTOR_COUNT[id] >= MOTOR_TARGET_STEPS[id] ) {
-			// 計算步數大於預期步數，則停止馬達，終止計數
-			motor_set(id,0,DISABLE);
-			MOTOR_IS_ENABLE[id]=0;
-			INT_cls(7-id);
-		} else if ( MOTOR_IS_ENABLE[id] ) {
-			MOTOR_COUNT[id]++;
-			printf("%d\n", MOTOR_COUNT[id]);
-		} else {
-
-		}
-	}
-
-}
-uint8_t motor_go_time(uint8_t id, uint32_t target_micro_secs){
-	motor_set(id,0,ENABLE);
-	MOTOR_TIME_ENABLE[id]=1;
-	MOTOR_TIME_COUNT[id]=0;
-	MOTOR_TIME_TARGET[id]=target_micro_secs;
-
-	return 0;
-}
-
-void motor_check_time() {
-	for (uint8_t id = 0; id < 4; id++) {
-		if (MOTOR_TIME_ENABLE[id] == ENABLE) {
-			if ( MOTOR_TIME_COUNT[id] >= MOTOR_TIME_TARGET[id] ) {
-				motor_set(id,0,DISABLE);
-				MOTOR_TIME_ENABLE[id]=0;
-				// printf("END----\n");
-			}else if ( MOTOR_TIME_ENABLE[id] == ENABLE) {
-				MOTOR_TIME_COUNT[id]++;
-				// printf("id = %d ----%ld,%ld\n", id, MOTOR_TIME_COUNT[id], MOTOR_TIME_TARGET[id]);
-			}
-		}
-	}
-}
-/*================================================*/
 
 void go_ahead(uint32_t target_micro_secs) {
 	motor_set(MOTOR_RIGHT,1,500);
@@ -433,21 +254,5 @@ uint8_t servo_set(uint8_t id,uint8_t target_angle){
 
     return 0;
     // return 0:沒問題, 1:wrong ID, 2:wrong mode, 3:wrong data
-}
-/*========================================================*/
-
-/*=== Timer3 functioin ===================================*/
-void TIMER3_init(){
-    //Configure TIMER1
-	TCCR3A|=(1<<COM3A1)|(1<<COM3B1)|(1<<COM3C1)|(1<<WGM31);        //NON Inverted PWM (enable OCR1A,OCR1B)
-	TCCR3B|=(1<<WGM33)|(1<<WGM32)|(1<<CS31)|(0<<CS30); //PRESCALER=8 MODE 14(FAST PWM)
-
-	ICR3=27992;  //fPWM=50Hz (Period = 20ms Standard).
-    //PRESCALER=8 ICR1=27992
-    //PRESCALER=64 ICR1=3499
-
-    DDRE  |=(1<<PE4)|(1<<PE5);   //PWM Pins as Out
-    PORTE &=~(1<<PE4);
-    PORTE &=~(1<<PE5);
 }
 /*========================================================*/
