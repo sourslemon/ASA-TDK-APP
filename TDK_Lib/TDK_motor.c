@@ -2,9 +2,10 @@
 #include "TDK_motor.h"
 #include "ASA_Lib.h"
 #include "TDK_external.h"
+#include <inttypes.h>
 
 /*=== Motor function==============================*/
-uint16_t NEW_COUNT=0;
+uint16_t NEW_COUNTMOTOR_=0;
 uint8_t  MOTOR_IS_ENABLE[4]={0};
 uint16_t MOTOR_COUNT[4]={0};
 uint16_t MOTOR_TARGET_STEPS[4]={0};
@@ -109,16 +110,16 @@ void motor_check_time() {
 /*================================================*/
 
 /*=== INT_vect ===================================*/
-ISR(INT4_vect){
-	motor_check_steps(MOTOR_Z);
-}
-ISR(INT5_vect){
-	motor_check_steps(MOTOR_Y);
-}
-ISR(INT6_vect){
-	motor_check_steps(MOTOR_LEFT);
-}
-ISR(INT7_vect){
-	motor_check_steps(MOTOR_RIGHT);
-}
+// ISR(INT4_vect){
+// 	motor_check_steps(MOTOR_Z);
+// }
+// ISR(INT5_vect){
+// 	motor_check_steps(MOTOR_Y);
+// }
+// ISR(INT6_vect){
+// 	motor_check_steps(MOTOR_LEFT);
+// }
+// ISR(INT7_vect){
+// 	motor_check_steps(MOTOR_RIGHT);
+// }
 /*================================================*/

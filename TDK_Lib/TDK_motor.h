@@ -1,6 +1,7 @@
 // last modified by LiYu 2017.05.14
 #ifndef __TDK_motor_H__
 #define __TDK_motor_H__
+#include <inttypes.h>
 
 /*=== Motor Function Define ======================*/
 #define PWM00_1_ASA_ID 1

@@ -1,6 +1,7 @@
 // last modified by LiYu 2017.05.14
 #ifndef __TDK_servo_H__
 #define __TDK_servo_H__
+#include <inttypes.h>
 
 /*=== Servo Funtion Define ===============================*/
 #define SERVO_GRIPPING 0

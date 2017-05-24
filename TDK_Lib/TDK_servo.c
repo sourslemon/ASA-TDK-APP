@@ -1,12 +1,9 @@
 // last modified by LiYu 2017.05.14
 #include "TDK_servo.h"
 #include "ASA_Lib.h"
+#include <inttypes.h>
 
 /*=== Servo funcion ======================================*/
-int main(int argc, char const *argv[]) {
-	printf("%d\n",SERVO_GRIPPING);
-	return 0;
-}
 
 uint8_t servo_set(uint8_t id,uint8_t target_angle){
     // 0.00052643 (ms/per_val)

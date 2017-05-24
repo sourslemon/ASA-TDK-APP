@@ -31,10 +31,15 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 LIBS = -lm -lprintf_flt -lscanf_flt
 
 ## Objects that must be built in order to link
-OBJECTS = ASA_DIO.o ASA_SPI.o ASA_TMP121.o ASA_MAX7219.o
+# OBJECTS = ASA_DIO.o ASA_SPI.o ASA_TMP121.o ASA_MAX7219.o
+
+LIBSRC = $(wildcard TDK_Lib/*.c)
+LIBOBJS = $(patsubst %.c,%.o,$(LIBSRC))
+
+VPATH = Test TDK_Lib
 
 ## Objects explicitly added by the user
-LINKONLYOBJECTS = ".\LIB\ASA_Lib.o"
+LINKONLYOBJECTS = ".\TDK_Lib\ASA_Lib.o"
 
 ## Build
 help:
@@ -54,8 +59,8 @@ ASA_MAX7219.o: ./LIB/ASA_MAX7219.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c  $<
 
 ##Link
-%.elf: %.o $(OBJECTS)
-	 $(CC) $(LDFLAGS) $< $(OBJECTS) $(LINKONLYOBJECTS) $(LIBDIRS) $(LIBS) -o $@
+%.elf: %.o $(LIBOBJS)
+	 $(CC) $(LDFLAGS) $< $(LIBOBJS) $(LINKONLYOBJECTS) $(LIBDIRS) $(LIBS) -o $@
 
 %.hex: %.elf
 	avr-objcopy -O ihex $(HEX_FLASH_FLAGS)  $< $@
@@ -65,7 +70,7 @@ ASA_MAX7219.o: ./LIB/ASA_MAX7219.c
 	@avr-size -C --mcu=${MCU} $<
 	@-mkdir -p hex
 	@-mv $*.hex hex/
-	@-rm -rf $(OBJECTS) $*.map $*.o $<
+	@-rm -rf $(LIBOBJS) $*.map $*.o $<
 
 %.eep: %.elf
 	-avr-objcopy $(HEX_EEPROM_FLAGS) -O ihex $< $@ || exit 0
@@ -80,4 +85,4 @@ size: ${TARGET}
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf $(OBJECTS) *.elf *.hex ./hex/*
+	-rm -rf $(LIBOBJS) *.elf *.hex ./hex/*
